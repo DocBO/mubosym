@@ -4,7 +4,7 @@ Created on Mon Jan 19 08:34:00 2015
 
 @author: loc_yangtingting
 """
-
+from __future__ import print_function
 import sqlite3
                
 name = '/Datenmodell.db'
@@ -14,7 +14,7 @@ class dbHandler(object):
         '''
         dbhandler object
         '''
-        print "try to open: "+path+name
+        print( "try to open: "+path+name )
         self.conn = sqlite3.connect(path+name)
         self.c = self.conn.cursor()
         sql = 'CREATE TABLE if not exists models (name text PRIMARY KEY, expr text)'

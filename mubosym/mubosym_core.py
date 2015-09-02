@@ -6,25 +6,32 @@ Created on Sun Mar  8 11:50:46 2015
 
 @author: oliver
 """
+from __future__ import print_function, absolute_import
+import os.path, sys
+
+sys.path.insert(0,os.path.realpath(os.path.dirname(__file__)))
+
+import b_splines_interface #as kennlinie
+import one_body_force_model_interface # as one_body_force_model 
+import simple_tire_model_interface # simple_tire_model
 
 try:
     import pandas as pd
     no_pandas = False    
 except:
-    print 'can not use pandas here'
+    print( 'can not use pandas here' )
     no_pandas = True
 #from numba import jit
 
 import time, copy, sys
 
-from sympy import symbols, lambdify, sign, re, acos, asin, sin, cos, Poly
+from sympy import symbols, lambdify, sign, re, acos, asin, sin, cos
 from sympy.physics.mechanics import ( Vector, ReferenceFrame, Point, dynamicsymbols, outer,
-                        RigidBody, KanesMethod, gradient)
+                        RigidBody, KanesMethod)
 from sympy.solvers import solve as sp_solve
 
 #Vector.simp = True
 
-#import numpy as np
 from numpy import array, hstack, vstack, ones, zeros, linspace, pi, sqrt
 from numpy.linalg import eig
 from numpy.linalg import solve as np_solve
@@ -72,7 +79,7 @@ class InputError(Exception):
         self.msg = 'Wrong Input caused by: ' + input
         super(InputError, self).__init__(self.msg)
  
-
+n_body = -1                            # number of the actual body
 IF = ReferenceFrame('IF')              # Inertial reference frame
 O = Point('O')                         # Origin point
 O.set_vel(IF, 0)                       # Origin's velocity is zero
@@ -146,122 +153,68 @@ class MBSframe(ReferenceFrame):
             self.vel = self.vel.subs(d)
             self.acc = self.acc.subs(d)
 
+class MBSio(object):
+    """
+    This class creates a dummy MBSworld object and returns it for the user to play with.
     
-class MBSbody(object):
-    def __init__(self, n, name, mass, I, pos, vel, frame, joint, N_att, N_att_fixed, atm = ''):
-        self.n = n
-        self.frame = frame
-        self.joint = joint
-        self.vel = vel
-        self.pos = pos
-        self.name = name
-        self.mass = mass
-        self.I = I
-        self.N_att = N_att
-        self.N_att_fixed = N_att_fixed
-        self.attached_to_marker = atm #string name of marker
-    def get_vel(self):
-        return self.vel
-    def get_vel_magnitude(self):
-        return self.vel.magnitude()
-    def get_pos(self):
-        return self.pos
-    def Pt(self):
-        return self.frame.get_pos_Pt()
-    def x(self):
-        return self.frame.px()
-    def y(self):
-        return self.frame.py()
-    def z(self):
-        return self.frame.pz()
-    def x_dt(self):
-        return self.frame.px_dt()
-    def y_dt(self):
-        return self.frame.py_dt()
-    def z_dt(self):
-        return self.frame.pz_dt()
-    def x_ddt(self):
-        return self.frame.px_ddt()
-    def y_ddt(self):
-        return self.frame.py_ddt()
-    def z_ddt(self):
-        return self.frame.pz_ddt()
-    def get_frame(self):
-        return self.frame
-    def get_n(self):
-        return self.n
-    def get_N_att(self):
-        return self.N_att
-    def get_N_att_fixed(self):
-        return self.N_att_fixed
-    def get_mass(self):
-        return self.mass
-    def set_dicts(self, dicts):
-        for d in dicts:
-            self.pos = self.pos.subs(d)
-            self.vel = self.vel.subs(d)
-        
-class MBSmarker(object):
-    def __init__(self, name, frame, body_name):
-        self.name = name
-        self.frame = frame
-        self.body_name = body_name   #here the name is better
-    def get_frame(self):
-        return self.frame
-    def get_body_name(self):
-        return self.body_name
-    def Pt(self):
-        return self.frame.get_pos_Pt()
-    def x(self):
-        return self.frame.px()
-    def y(self):
-        return self.frame.py()
-    def z(self):
-        return self.frame.pz()
-    def x_dt(self):
-        return self.frame.px_dt()
-    def y_dt(self):
-        return self.frame.py_dt()
-    def z_dt(self):
-        return self.frame.pz_dt()
-    def x_ddt(self):
-        return self.frame.px_ddt()
-    def y_ddt(self):
-        return self.frame.py_ddt()
-    def z_ddt(self):
-        return self.frame.pz_ddt()
-    #def set_dicts(self, dicts):
-    #    for d in dicts:
-    #        self.pos = self.pos.subs(d)
-    #        self.vel = self.vel.subs(d)
-        
-class MBSparameter(object):
-    def __init__(self, name, sym, sym_dt, sym_ddt, func, func_dt, func_ddt, diff_dict, const = 0.):
-        self.name = name
-        self.sym = sym
-        self.sym_dt = sym_dt
-        self.sym_ddt = sym_ddt
-        self.func = func
-        self.func_dt = func_dt
-        self.func_ddt = func_ddt
-        self.diff_dict = diff_dict
-        self.c = const
-    def get_func(self):
-        return self.func, self.func_dt, self.func_ddt
-    def get_paras(self):
-        return self.sym, self.sym_dt, self.sym_ddt
-    def get_diff_dict(self):
-        return self.diff_dict
-    def set_constant(self, c):
-        self.c = c
-        
-class MBSmodel(object):
-    def __init__(self, name, reference):
-        self.name = name
-        self.ref = reference
-    def add_signal(self, expr):
-        self.ref.add_signal(expr)
+    But maybee an IO handling class should be created instead?
     
+    imagine just passing a MBSworld object and executing animate() from here
+    """
+    def __init__(self,filename,MBworld=None,save=False,params = ['state', 'orient', 'con', 'e_kin', 'time', 'x_t', 'acc', 'e_pot', 'e_tot', 'e_rot', 'speed', 'signals']):
+        
+        if MBworld == None:
+            pass
+            #self.MBworld = object()
+        if not save:
+            self.__read__(filename,params)
+        if save:
+            self.store = pd.HDFStore(filename,complevel=9, complib='bzip2', fletcher32=True)
+            self.__save__(params,MBworld)
+            
+    def __save__(self,params,MBworld):
+        """
+        creates a Store object or buffer
+        """
+#        for par in params:
+#            self.store[par] = getattr(MBworld,par)
+#        
+#        self.store.close()
+        
+        self.store['state'] = pd.DataFrame(MBworld.state[:,:3],columns=['x', 'y', 'z']) # 3 includes 3d cartesians
+        self.store['orient'] = pd.DataFrame(MBworld.orient[:,:6],columns=['ex_x', 'ex_y', 'ex_z', 'eys_x', 'ey_y', 'ey_z']) #2 cartesians vectors e_x, e_y
+        self.store['con']  = pd.DataFrame(MBworld.con)  # 3d cartesian vector from-to (info)
+
+        self.store['e_kin'] = pd.DataFrame(MBworld.e_kin)
+        self.store['time'] = pd.DataFrame(MBworld.time)
+        self.store['x_t'] = pd.DataFrame(MBworld.x_t)
+        self.store['acc'] = pd.DataFrame(MBworld.acc)
+        self.store['e_pot'] = pd.DataFrame(MBworld.e_pot)
+        self.store['e_tot'] = pd.DataFrame(MBworld.e_tot)
+        self.store['e_rot'] = pd.DataFrame(MBworld.e_rot)
+        self.store['speed'] = pd.DataFrame(MBworld.speed)
+        self.store['signals'] = pd.Series(MBworld.signals)
+        
+#        here we must consider on how to store the data properly...
+#        self.store['vis_body_frames'] = pd.DataFrame(self.vis_body_frames) #1 frame moving
+#        self.store['vis_forces'] = pd.DataFrame(self.vis_forces) # 1 force on body
+#        self.store['vis_frame_coords'] = pd.DataFrame(self.vis_frame_coords)
+#        self.store['vis_force_coords'] = pd.DataFrame(self.vis_force_coords)
+        
+        
+    def __read__(self,filename,params):
+        for par in params:
+            setattr(self,par,pd.read_hdf(filename,par))
+        #return self
+            #here we must consider on how to store the data properly...
+            #self.store['vis_body_frames'] = pd.DataFrame(self.vis_body_frames) #1 frame moving
+            #self.store['vis_forces'] = pd.DataFrame(self.vis_forces) # 1 force on body
+            #self.store['vis_frame_coords'] = pd.DataFrame(self.vis_frame_coords)
+            #self.store['vis_force_coords'] = pd.DataFrame(self.vis_force_coords)    
+            
+    def animate(self):
+        pass
+
 class MBSworld(object):
     """
     All storages lists and dictionaries for a full multibody sim world. Keeps track of every frame, body, force and torque.
@@ -765,9 +718,9 @@ class MBSworld(object):
             
         vel_pt = pos_pt.diff(t, IF) 
         self.bodies_obj.update({new_body_name:MBSbody(n_body,new_body_name, mass, I, pos_pt, vel_pt, N_fixed, joint, N_att, N_att_fixed, str_n_marker) })
-        print "body no: ",n_body
-        print "body pos: ", pos_pt
-        print "body vel: ", vel_pt
+        print( "body no: ",n_body )
+        print( "body pos: ", pos_pt )
+        print( "body vel: ", vel_pt )
         
         #TODO check the coefficients and delete all small ones
         
@@ -835,6 +788,7 @@ class MBSworld(object):
         Pt_n = body.Pt()        
         N_att = body.get_N_att()
         Pt_att = N_att.get_pos_Pt()
+        #print ( N_att, Pt_att )
         if force_type == 'spring-axes':
             if len(parameters) == 0 :
                 raise ParameterError(parameters, 1, "spring-axes")
@@ -894,7 +848,7 @@ class MBSworld(object):
 
         
         if torque_type == 'bending-stiffness-1':
-            print 'stiffness'
+            print( 'stiffness' )
             phi = self.q[n][0]
             torque = -parameters[1]*( phi - parameters[0])*N_fixed_n.z # phi is always the first freedom
             self.pot_energy_saver.append(0.5*parameters[1]*(phi-parameters[0])**2)
@@ -902,7 +856,7 @@ class MBSworld(object):
             self.torques.append((N_fixed_m, -torque))
             
         elif torque_type == 'bending-stiffness-2':
-            print 'stiffness-2'
+            print( 'stiffness-2' )
             #r_vec = Pt_n.pos_from(Pt_m)
             
             phi = -N_fixed_n.y.cross(N_att_fixed.y)
@@ -912,9 +866,9 @@ class MBSworld(object):
             self.pot_energy_saver.append(0.5*parameters[1]*phi_m**2)
             self.torques.append((N_fixed_n, torque))
             self.torques.append((N_fixed_m, -torque))
-            print "TORQUE: ", phi, torque
+            print( "TORQUE: ", phi, torque )
         elif torque_type == 'rotation-stiffness-1':
-            print 'rot-stiffness-1'
+            print( 'rot-stiffness-1' )
             phi = self.q[n][0]
             torque = -parameters[0]*phi*N_fixed_m.y #-parameters[1]*phi_3
             
@@ -922,7 +876,7 @@ class MBSworld(object):
             
             self.torques.append((N_fixed_n, torque))
             self.torques.append((N_fixed_m, -torque))
-            print "TORQUE: ", phi, "...", torque
+            print( "TORQUE: ", phi, "...", torque )
         else:
             raise InputError(torque_type)
     
@@ -1076,7 +1030,7 @@ class MBSworld(object):
         m, N_fixed_m, _, _ = self._interpretation_of_str_m_b(str_m_b_ref) 
         
         #old: Pt_n = self.body_frames[n].get_pos_Pt()
-        print n, N_fixed_n
+        print( n, N_fixed_n )
         Pt_n = N_fixed_n.get_pos_Pt()
         self.f_ext_act.append(dynamicsymbols('f_ext'+str(n)))
         f_vec = vx * self.f_ext_act[-1]*N_fixed_m.x.express(IF) +\
@@ -1339,12 +1293,12 @@ class MBSworld(object):
         self.ev = self.A.eigenvals()
         k = 1
         myEV = []
-        print "*****************************"
+        print( "*****************************" )
         for e in self.ev.keys():
             myEV.append(e.evalf())
-            print k, ". EV: ", e.evalf()
+            print( k, ". EV: ", e.evalf() )
             k+= 1
-        print "*****************************"
+        print( "*****************************" )
         ar = self.matrix_to_array(self.A, self.A.shape[0])
         self.eig = eig(ar)
         
@@ -1357,12 +1311,12 @@ class MBSworld(object):
             for i in range(n-1):
                 line = hstack((line, float(A[j+1,i+1])))
             out = vstack((out, line))
-        print out
+        print( out )
         return out
         
     def kaneify(self, simplify = False):
         global IF, O, g, t
-        print "Assemble the equations of motion ..."
+        print( "Assemble the equations of motion ..." )
         tic = time.clock()
         self.q_flat = [ii for mi in self.q for ii in mi]
         self.u_flat = [ii for mi in self.u for ii in mi]
@@ -1385,7 +1339,7 @@ class MBSworld(object):
 
 
         if self.connect and not self.db_setup:
-            print "from the db ..."
+            print( "from the db ..." )
             wd = worldData()
             wd.put_str(self.mydb.get(self.name)[1])
             newWorld = list_to_world( wd.get_list() )
@@ -1393,11 +1347,11 @@ class MBSworld(object):
             self.F = newWorld.F
             self.kindiff_dict = newWorld.kindiff_dict
             if not self.dynamic == newWorld.dynamic:
-                print self.dynamic
-                print newWorld.dynamic
+                print( self.dynamic )
+                print( newWorld.dynamic )
                 raise Exception
         else:
-            print "calc further (subs)..."
+            print( "calc further (subs)..." )
             self.kane = KanesMethod(IF, q_ind=self.q_flat, u_ind=self.u_flat, kd_eqs=self.kindiffs)
             self.fr, self.frstar = self.kane.kanes_equations(self.forces+self.torques, self.particles) 
             self.kindiff_dict = self.kane.kindiffdict()
@@ -1434,11 +1388,11 @@ class MBSworld(object):
             self.mydb.put(self.name, wd.get_str())
         ########################################################
         if simplify:
-            print "start simplify ..."
+            print( "start simplify ..." )
             self.M.simplify()
             self.F.simplify()
         ########################################################
-        print "equations now in ram... lambdify the M,F parts"
+        print( "equations now in ram... lambdify the M,F parts" )
         self.M_func = lambdify(self.dynamic, self.M)               # Create a callable function to evaluate the mass matrix 
         self.F_func = lambdify(self.dynamic, self.F)               # Create a callable function to evaluate the forcing vector 
         #lambdify the part forces (only with self.freedom)
@@ -1473,7 +1427,7 @@ class MBSworld(object):
 #            #oo.set_dicts(d)
 #            oo.get_frame().set_dicts(d)
         
-        print "finished ... ", toc-tic
+        print( "finished ... ", toc-tic )
           
 
     def right_hand_side(self, x, t, args = []):
@@ -1493,7 +1447,7 @@ class MBSworld(object):
         #checkpoint output
         if t>self.tau_check:
             self.tau_check+=0.1
-            print t
+            print( t )
             
         arguments = hstack((x,f_t))       # States, input, and parameters
         #lu = factorized(self.M_func(*arguments))
@@ -1702,7 +1656,7 @@ class MBSworld(object):
         pass
     
     def prep_lambdas(self, moving_frames_in_graphics = [], fixed_frames_in_graphics = [], forces_in_graphics = [], bodies_in_graphics = {}):
-        print "start preparing lambdas..."
+        print( "start preparing lambdas..." )
         start = time.clock()
         self.res_body_pos_IF()
         self.res_body_orient()
@@ -1738,7 +1692,7 @@ class MBSworld(object):
         for k,v in bodies_in_graphics.iteritems():
             n, N_fixed_n, is_body, body = self._interpretation_of_str_m_b(k)
             self.bodies_in_graphics.update({n:v})
-        print "finished ...",end-start
+        print( "finished ...",end-start )
 
     def prepare(self, path, save=True):
         #transform back to produce a state vector in IF
@@ -1918,7 +1872,7 @@ class MBSworld(object):
         global IF, O, g, t
         
         self.time = linspace(0, t_max, int(t_max/delta_t))
-        print "start integration ..."
+        print( "start integration ..." )
         start = time.clock()
         ###
         #some int stuff
@@ -1935,7 +1889,7 @@ class MBSworld(object):
             self.x_t = odeint(self.right_hand_side, x0, self.time, args=([0.,0.],) , hmax = 1.0e-1, hmin = 1.0e-7*tolerance, atol = 1e-5*tolerance, rtol = 1e-5*tolerance, mxords = 4, mxordn = 8)            
                 
         end = time.clock()       
-        print "end integration ...", end-start
+        print( "end integration ...", end-start )
       
         
     
@@ -1962,7 +1916,7 @@ class MBSworld(object):
                 equ1a += lam[-1].simplify()
             c_cons.append(equ1a)
             u_cons.append(equ1a.diff().subs(self.kindiff_dict))
-        print "c_cons: ", c_cons    
+        print( "c_cons: ", c_cons )
         return c_cons, u_cons
         
     def linearize(self, x_op, a_op, quad = False):
@@ -1991,8 +1945,8 @@ class MBSworld(object):
             if not dep:
                 q_ind.append(self.q_flat[d])
                 u_ind.append(self.u_flat[d])
-        print "ind: ",q_ind
-        print "dep: ",q_dep
+        print( "ind: ",q_ind )
+        print( "dep: ",q_dep )
         #repair the operation point to be consistent with the constraints
         # and calc the backtrafo 
         self.equ_out = []
@@ -2066,9 +2020,9 @@ class MBSworld(object):
         """
         jac = self.calc_Jacobian(n)
         ev = eig(jac)[0]
-        print "Eigenvalues: time [s] ",self.time[n]
+        print( "Eigenvalues: time [s] ",self.time[n] )
         for e in range(len(ev)):
-            print str(e)+"... ",ev[e]
+            print( str(e)+"... ",ev[e] )
         return jac
         
     def linfaktor(self, x_op, q):
