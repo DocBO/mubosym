@@ -4,6 +4,7 @@ Created on Sat May 16 18:33:20 2015
 
 @author: oliver
 """
+from __future__ import print_function
 
 from sympy import symbols, lambdify, sign, re, acos, asin, sin, cos, bspline_basis
 from matplotlib import pyplot as plt
@@ -19,7 +20,7 @@ def read_kl(filename):
     inlist = [ x for x in inlist if x != '']
     inlist = [ x for x in inlist if x[0] != '#']
     inlist = [x.split(' ') for x in inlist]
-    print inlist
+    print( inlist )
     x_in = np.array([ float(x[0]) for x in inlist])
     y_in = np.array([ float(x[1]) for x in inlist])
     return x_in, y_in
@@ -84,7 +85,7 @@ class characteristic_line():
         self.lam_base = [] # the lambdified basis expressions
         self.sym_base = [] # the symbolic basis expressions
         knots = create_knots(a,b,n,p)
-        print "Prepare Kennlinien Base-Fct..."
+        print( "Prepare Kennlinien Base-Fct..." )
         for k in range(n-p-1):
             #print k
             u = bspline_basis(p, knots, k, x)

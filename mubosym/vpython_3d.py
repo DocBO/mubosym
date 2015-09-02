@@ -461,7 +461,7 @@ class animation():
                         
     def set_stationary_vectors(self, vs):
         for v in vs:
-            print v
+            print( v )
             Vector_stat(v[0], v[1], '', self.p, pos=(0,0,0), axis=(5,0,0), shaftwidth=0.2)
     
     def set_stationary_frame(self, mf):
