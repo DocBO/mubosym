@@ -1,5 +1,5 @@
 
-Multibody Simualtion with Python
+Multibody Simulation with Python
 --------------------------------------------------------------------------------------------------------
 Projectname: mubosym
 
@@ -23,7 +23,8 @@ Optional dependency for postprocessing of data:
 Docu: /build/html/index.html
 Slides for intro: /talk_at_europython_2015.pdf
 
-Struktur
+
+Project folder structure:
 
 mubosym/
 ├── build
