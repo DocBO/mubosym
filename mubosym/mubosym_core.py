@@ -1453,6 +1453,7 @@ class MBSworld(object):
 
 
         if self.connect and not self.db_setup:
+            print(self.db_setup)
             print( "from the db ..." )
             wd = worldData()
             wd.put_str(self.mydb.get(self.name)[1])

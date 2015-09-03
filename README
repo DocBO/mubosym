@@ -27,6 +27,8 @@ Optional dependency for postprocessing of data:
 Documentation: /build/html/index.html
 Slides for intro: /talk_at_europython_2015.pdf
 
+Development:
+If you provide additional features please fork the development branch and pull-request therein. Pull requests for the master branch are not taken into account. Before you pull-request make sure that test_all.py runs through without any exception.
 
 Project folder structure:
 

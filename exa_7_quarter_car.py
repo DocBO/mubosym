@@ -13,6 +13,7 @@ DATA_PATH = BASE_PATH + '/data'
 sys.path.append(BASE_PATH+"/mubosym") #python 3 compatibility (later on)
 
 import mubosym as mbs
+from interp1d_interface import interp
 mbs.BASE_PATH = BASE_PATH
 
 ###############################################################
@@ -55,7 +56,7 @@ def rotation_inp_expr():
     t, A = symbols('t A')
     return A*sin(1.0*t)
 
-k = mbs.interp1d_interface.interp(filename = DATA_PATH+'/vel_01.dat')
+k = interp(filename = DATA_PATH+'/vel_01.dat')
 #high end definition of static variables...
 @mbs.static_vars(t_p=0, diff_p=0)
 def lateral_inp(t): 

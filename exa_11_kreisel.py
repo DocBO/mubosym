@@ -12,7 +12,7 @@ import mubosym as mbs
 
 ###############################################################
 # general system setup example
-myMBS = mbs.MBSworld()
+myMBS = mbs.MBSworld('kreisel', connect=True, force_db_setup=False)
 
 #prepare a standard 
 I = [50.,50.,50.]
