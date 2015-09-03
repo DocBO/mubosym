@@ -5,8 +5,12 @@ Projectname: mubosym
 
 Description:
 The project aim is to make multibody simulation possible from scratch for python (at the moment 2.7.X).
-The system setup should be simple and possible even for beginners. On the other hand no limitations for complexity.
+The mechanical system setup should be simple and possible even for beginners. On the other hand no limitations for complexity.
 
+Install:
+Since we still lack of a setup.py at the moment, just download the repository and put it in a working directory. Fix the dependencies by hand:
+pip install ... for the usual packages. Go to http://vpython.org for vpython.
+For the future we will get rid of the vpython dependendy and try to use vispy which seems more community adjusted.
 
 Dependencies:
  - numpy (1.9.2)
@@ -20,7 +24,7 @@ Optional dependency for postprocessing of data:
  - pandas
 
 
-Docu: /build/html/index.html
+Documentation: /build/html/index.html
 Slides for intro: /talk_at_europython_2015.pdf
 
 
