@@ -724,7 +724,8 @@ class MBSworld(object):
         elif joint in free6:
             d_free = 6
         else:
-            raise InputError(joint)
+            raise InputError("no such joint name %s" % str(joint))
+
         self.q.append(dynamicsymbols('q'+str(n_body)+'x0:'+str(d_free)))
         self.u.append(dynamicsymbols('u'+str(n_body)+'x0:'+str(d_free)))
         self.a.append(dynamicsymbols('a'+str(n_body)+'x0:'+str(d_free)))
@@ -776,7 +777,6 @@ class MBSworld(object):
             N_fixed.orient(N_att_fixed, 'Axis', [0., IF.y] )
             N_att.orient(N_att_fixed, 'Axis', [0., IF.y] ) #phi, r
             pos_pt = (self.q[n_body][0]*IF.x + self.q[n_body][1]*IF.y + self.q[n_body][2]*IF.z).express(IF, variables = True)+t_frame
-
         elif joint == 'free-6':
             N_fixed.orient(IF, 'Body', [self.q[n_body][0],self.q[n_body][1],self.q[n_body][2]], 'XYZ' )
             pos_pt = (self.q[n_body][3]*IF.x + self.q[n_body][4]*IF.y + self.q[n_body][5]*IF.z).express(IF, variables = True)+t_frame
@@ -823,12 +823,18 @@ class MBSworld(object):
                 pos_pt = (parameters[0]*N_fixed.y).express(IF, variables = True)+t_frame
             else:
                 pos_pt = (parameters[0]*N_fixed.z).express(IF, variables = True)+t_frame
+        else:
+            # we will never get here because we already checked for comleteness
+            # by looking in the containers of free0 - free6, but we never know, so again...
+            raise InputError("no such joint name %s" % str(joint))
 
         vel_pt = pos_pt.diff(t, IF)
+        # here we update the joint name to the body
         self.bodies_obj.update({new_body_name:MBSbody(n_body,new_body_name, mass, I, pos_pt, vel_pt, N_fixed, joint, N_att, N_att_fixed, str_n_marker) })
-        print( "body no: ",n_body )
-        print( "body pos: ", pos_pt )
-        print( "body vel: ", vel_pt )
+        print( "body no:", n_body )
+        print( "body has joint:", joint )
+        print( "body pos:", pos_pt )
+        print( "body vel:", vel_pt )
 
         #TODO check the coefficients and delete all small ones
 
@@ -1998,9 +2004,6 @@ class MBSworld(object):
 
         end = time.clock()
         print( "end integration ...", end-start )
-
-
-
 
     def constr_lin(self, x_op, quad = False):
         n_const = len(self.eq_constr)
