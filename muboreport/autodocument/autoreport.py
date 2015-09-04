@@ -8,9 +8,21 @@ Created on Mon Jun 17 16:45:06 2013
 -Automatische Bericht-Erstellung (mit reportlab)
 -Intern vollständig auf Vektorgrafik basierend -> kleine, immer anzeige- und druck- optimale Dokumente!
 
-"""
+#TODO fix unicode issue with python3
 
-import re
+
+this is the core for the muboreport module, every example shall be included and automatic documentation shall be added
+
+possibly also sphinx autodocument integration can be done from here 
+
+"""
+from __future__ import print_function
+
+import os,sys,re
+
+BASE_PATH = os.path.realpath(os.path.join(os.path.dirname(__file__),"../../"))
+
+sys.path.insert(0,BASE_PATH)
 
 #import xlrd as xr
 import numpy as np
@@ -167,7 +179,7 @@ def printl(*args):
     except NameError:
         pass
     except AttributeError:
-        print args
+        print( args )
 
 def printt(Table,Header):
     """
@@ -178,7 +190,7 @@ def printt(Table,Header):
     except NameError:
         pass
     except AttributeError:
-        print "Error in call to printt"
+        print( "Error in call to printt" )
 
 #def GetLogFile(log=log):
 #    if path_ausw == None:
@@ -436,11 +448,11 @@ def plotHist(data,name,subname=u"Noten der Probanden für das Phänomen",spec="d
     else:
         mybins = N
         
-    print "mybins", mybins
+    print( "mybins", mybins )
     
     try:
         if not (len(data) < 6):
-            print data
+            print( data )
             density = gaussian_kde(data)
             density.covariance_factor = lambda : .25
             density._compute_covariance()
@@ -460,9 +472,9 @@ def plotHist(data,name,subname=u"Noten der Probanden für das Phänomen",spec="d
     
     normheight = np.linalg.norm(height)
     
-    print "bins", bins
-    print "height", height
-    print "normheight", normheight
+    print( "bins", bins )
+    print( "height", height )
+    print( "normheight", normheight )
     
     rects = ax.bar(bins[:-1], height/normheight, align='center', label="Stichprobenverteilung "+ name)
         
@@ -484,7 +496,7 @@ def plotHist(data,name,subname=u"Noten der Probanden für das Phänomen",spec="d
     
     fbox = ax.get_position()
     
-    print bins.min(), bins.max()
+    print( bins.min(), bins.max() )
     
     ax.set_xlim(left=bins.min()-0.4, right=bins.max()+0.4)
     ax.set_ylim(bottom=0.0)
@@ -521,7 +533,7 @@ def plotHist(data,name,subname=u"Noten der Probanden für das Phänomen",spec="d
     else:
         imgname = name + ".png"
     
-    print imgname
+    print( imgname )
     
     plt.savefig(imgname)
     #plt.savefig(imgdata,format='PDF')
@@ -546,7 +558,7 @@ def getDiademImage(Vgl,fill=2,path=r"C:\UserData\eckstjo\PhenSchu\PhaenomenAbgle
     #PhaenSchu_Vgl_02_Stuckern.PNG
     # another way to fill with zeros: str(1).zfill(fill)
     imgname = path + "PhaenSchu_Vgl_%0*d_" % (fill, Vgl) + typ + ".PNG"
-    print imgname
+    print( imgname )
     return Image(imgname)
 
 def reformatData(Data,Vgl,Phe):
@@ -592,7 +604,7 @@ def Convert2PdfReport(doc,parts,Daten,outpath,Fahrzeuge,Note=None,Carnames=None)
     
        
     Fahrzeuge = [Fahrzeuge[this] for this in idxs]
-    print "Fahrzeuge/Vergleiche:",Fahrzeuge
+    print( "Fahrzeuge/Vergleiche:",Fahrzeuge )
     #print "Phaenomene:",Phaenomene
 
     if not Note == None:
@@ -616,7 +628,7 @@ def Convert2PdfReport(doc,parts,Daten,outpath,Fahrzeuge,Note=None,Carnames=None)
             
 
     for i,Fahrzeug in enumerate(Fahrzeuge):
-        print Daten.viewkeys()
+        print( Daten.viewkeys() )
         Vergleich = Daten[Fahrzeug] #,Meinungen
         title = u"Auswertung für " + str(Fahrzeug)
         if not Carnames == None:
@@ -650,7 +662,7 @@ def Convert2PdfReport(doc,parts,Daten,outpath,Fahrzeuge,Note=None,Carnames=None)
                 try:
                     celldata[j+1][0] = unicode(Phaenomene[j])
                 except IndexError:
-                    print "Error:"
+                    print( "Error:" )
                     #print celldata, Phaenomene[j]
                 
                 if not Phaenomen.len == 0:
@@ -677,7 +689,7 @@ def Convert2PdfReport(doc,parts,Daten,outpath,Fahrzeuge,Note=None,Carnames=None)
                     parts.append(para)                
                 
             except LayoutError:
-                print "Layout error detected, could not create the Document Template"
+                print( "Layout error detected, could not create the Document Template" )
                 
         #thisDrawing = barChart(Means,title+"Mittelwerte",Phaenomene,path=outpath,vMin=-4,vMax=4)
                 
@@ -771,14 +783,14 @@ def Auswertung(NewData,textdata,Vgl,Phe):
     actual Post processing main Function
     """
     nvgl, nphe, prob = NewData.shape
-    
+    __sep__ = "="*5
     Vergleiche = {}
-    print "===================================="
+    print( __sep__*6 )
     for Vergleich in Vgl:
 
         k = Vgl.index(Vergleich)
-        print "Vergleich", Vergleich
-        print "===================================="
+        print( "Vergleich", Vergleich )
+        print( __sep__*5 )
 
         text = ""
         
@@ -794,7 +806,7 @@ def Auswertung(NewData,textdata,Vgl,Phe):
 
         for Phaenomen in Phe:
             j = Phe.index(Phaenomen)
-            print u"Phänomen", Phaenomen
+            print( u"Phänomen", Phaenomen )
             data = ProbandenDaten()
             
             for l in range(prob):
@@ -816,8 +828,8 @@ def Auswertung(NewData,textdata,Vgl,Phe):
             else:
                 u"Keine Auswertung Möglich"
             data.len = len(data.Event)
-            print "Anzahl Vergebener Noten:", data.len
-            print "===================================="
+            print( "Anzahl Vergebener Noten:", data.len )
+            print( __sep__*5 )
             Phaenomene.update({Phaenomen:data})
         #print "===================================="
         Vergleiche.update({Vergleich:(Phaenomene,text)})
@@ -1121,7 +1133,7 @@ if __name__ == "__main__":
     text.update({"Schiefe":skew(x)})
     text.update({"Kurtosis":kurtosis(x)})
     
-    print Content[title]
+    print( Content[title] )
     
     thisImage = plotHist(Content[title],title,subname="",spec="",show=False,text=text,Versuch=Chapters[0],path="",N=6)
 
