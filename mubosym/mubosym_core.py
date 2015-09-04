@@ -9,7 +9,8 @@ Created on Sun Mar  8 11:50:46 2015
 from __future__ import print_function, absolute_import
 import os.path,sys,time,copy
 
-sys.path.insert(0,os.path.realpath(os.path.dirname(__file__)))
+
+sys.path.insert(0,os.path.realpath(os.path.join(os.path.dirname(__file__)),"../" )
 
 import b_splines_interface #as kennlinie
 import one_body_force_model_interface # as one_body_force_model
