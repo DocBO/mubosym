@@ -103,7 +103,9 @@ myMBS.add_parameter_torque('tire', 'tire_carrier_M0', [0.,0.,1.], 'theta_lateral
 ##################################
 # create control signals:
 vel_1 = myMBS.get_body('tire').get_vel_magnitude()
-myMBS.add_control_signal(vel_1)
+myMBS.add_control_signal(vel_1, "Geschw.", "m/s")
+dist_z = myMBS.get_body('tire').z()
+myMBS.add_control_signal(dist_z, "Abstand zur Spur", "m")
 ##################################
 # try to add into model
 m1 = myMBS.get_model('tiremodel')
@@ -161,7 +163,7 @@ jac = myMBS.calc_lin_analysis_n(len(myMBS.x_t)-1)
 
 
 myMBS.prepare(DATA_PATH, save=True)
-#myMBS.plotting(t_max, dt, plots='tire')
-x = myMBS.animate(t_max, dt, scale = 4, time_scale = 1.0, labels = True, t_ani = 30., center = 2)
+myMBS.plotting(t_max, dt, plots='signals')
+#x = myMBS.animate(t_max, dt, scale = 4, time_scale = 1.0, labels = True, t_ani = 30., center = 2)
 
 

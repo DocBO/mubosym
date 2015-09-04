@@ -28,7 +28,7 @@ mbs.BASE_PATH = BASE_PATH
 print("\n\n-------------------------------")
 print("TEST 1...")
 # general system setup example
-myMBS = mbs.MBSworld('crank_slider', connect=True, force_db_setup=False)
+myMBS = mbs.MBSworld('crank_slider', connect=False, force_db_setup=False)
 #prepare a standard 
 I = [0.,0.,0.]
 ######################################
@@ -76,7 +76,7 @@ assert(np.allclose(np.array([ 57.28569865,   1.82019692,   4.32724853,  -1.00045
 ################################################
 print("\n\n-------------------------------")
 print("TEST 2...")
-myMBS = mbs.MBSworld('swing_table', connect=True, force_db_setup=False)
+myMBS = mbs.MBSworld('swing_table', connect=False, force_db_setup=False)
 
 #prepare a standard 
 I = [0.,0.,0.]
@@ -132,7 +132,7 @@ assert(np.allclose(np.array([-12.27885932,  13.84937381,  -4.42472966,  -0.98827
 print("\n\n-------------------------------")
 print("TEST 3...")
 # general system setup example
-myMBS = mbs.MBSworld('reflective_wall', connect=True, force_db_setup=False)
+myMBS = mbs.MBSworld('reflective_wall', connect=False, force_db_setup=False)
 body = ["A", "B", "C"]
 marker = ["A_M0", "B_M0", "C_M0"]
 x0 = []
@@ -179,17 +179,17 @@ myMBS.prep_lambdas(body_frames_in_graphics, fixed_frames_in_graphics)
 dt = 0.01  # 10 ms for a nice animation result
 t_max = 30.
 myMBS.inte_grate_full(x0, t_max, dt, mode = 0)
-
+x_final = myMBS.x_t[-1]
 assert(t_max == myMBS.time[-1])
-assert(np.allclose(np.array([-0.18323544,  0.41215265, -0.11501946, -0.96063035,  2.02571599,
-       -2.36952456]),myMBS.x_t[-1]))
+assert(np.allclose(np.array([-0.02253284,  0.48113244,  0.0802598 ,  1.54017102, -0.78752434,
+        1.10845035]),myMBS.x_t[-1]))
 ################################################
 # test 4
 ################################################
 print("\n\n-------------------------------")
 print("TEST 4...")
 # general system setup example
-myMBS = mbs.MBSworld('strange_pendulum', connect=True, force_db_setup=False)
+myMBS = mbs.MBSworld('strange_pendulum', connect=False, force_db_setup=False)
 
 b_n = []
 m_n = []
@@ -231,15 +231,15 @@ t_max = 30.
 myMBS.inte_grate_full(x0, t_max, dt, mode = 0)
 
 assert(t_max == myMBS.time[-1])
-assert(np.allclose(np.array([ 39.37410091,   1.31899145,   0.18903324,   1.03234222,
-         0.63779899,   1.45354616]),myMBS.x_t[-1]))
+assert(np.allclose(np.array([ 39.37414311,   1.31856406,   0.19013064,   1.03270165,
+         0.63633591,   1.45670909]),myMBS.x_t[-1]))
 ################################################
 # test 5
 ################################################
 print("\n\n-------------------------------")
 print("TEST 5...")
 # general system setup example
-myMBS = mbs.MBSworld('rotating_pendulum', connect=True, force_db_setup=False)
+myMBS = mbs.MBSworld('rotating_pendulum', connect=False, force_db_setup=False)
 I = [1.,1.,1.]
 
 #############################################################
@@ -288,14 +288,14 @@ t_max = 30.
 myMBS.inte_grate_full(x0, t_max, dt, mode = 0)
 
 assert(t_max == myMBS.time[-1])
-assert(np.allclose(np.array([ 1.44550988,  0.02777232]),myMBS.x_t[-1]))
+assert(np.allclose(np.array([ 1.44551396,  0.02772908]),myMBS.x_t[-1]))
 ################################################
 # test 6
 ################################################
 print("\n\n-------------------------------")
 print("TEST 6...")
 # general system setup example
-myMBS = mbs.MBSworld('planetary_char', connect=True, force_db_setup=False)
+myMBS = mbs.MBSworld('planetary_char', connect=False, force_db_setup=False)
 #prepare a standard 
 I = [1.,1.,1.]
 
@@ -334,7 +334,7 @@ assert(np.allclose(np.array([  4.00697011e-01,   3.95631978e-01,   5.50716034e-0
 ################################################
 print("\n\n-------------------------------")
 print("TEST 7...")
-myMBS = mbs.MBSworld('quarter_car', connect=True, force_db_setup=False)
+myMBS = mbs.MBSworld('quarter_car', connect=False, force_db_setup=False)
 #prepare a standard 
 I_car = [500.,500.,500.]
 I = [0.,0.,0.]
@@ -448,7 +448,7 @@ print("TEST 8...")
 ################################################
 print("\n\n-------------------------------")
 print("TEST 9...")
-myMBS = mbs.MBSworld('moving_pendulum', connect=True, force_db_setup=False)
+myMBS = mbs.MBSworld('moving_pendulum', connect=False, force_db_setup=False)
 I = [0.,0.,0.]
 ############################################################
 # rotating frame constraint
@@ -489,13 +489,13 @@ t_max = 20.
 myMBS.inte_grate_full(x0, t_max, dt, mode = 0)
 
 assert(t_max == myMBS.time[-1])
-assert(np.allclose(np.array([-24.93498606,   3.86446862]),myMBS.x_t[-1]))
+assert(np.allclose(np.array([-24.93463153,   3.86271006]),myMBS.x_t[-1]))
 ################################################
 # test 10
 ################################################
 print("\n\n-------------------------------")
 print("TEST 10...")
-myMBS = mbs.MBSworld('bending_stiffness', connect=True, force_db_setup=False)
+myMBS = mbs.MBSworld('bending_stiffness', connect=False, force_db_setup=False)
 #prepare a standard 
 I = [10.,10.,10.]
 ###################################
@@ -536,14 +536,14 @@ t_max = 30.
 myMBS.inte_grate_full(x0, t_max, dt, mode = 0, tolerance = 1e-0)
 
 assert(t_max == myMBS.time[-1])
-assert(np.allclose(np.array([  3.19277659e+00,  -7.32591492e-05,   3.60464882e-01,
-        -8.19751393e-06,   4.91558138e-04,   1.62015916e+00]),myMBS.x_t[-1]))
+assert(np.allclose(np.array([  3.19277659e+00,  -7.33029363e-05,   3.60462376e-01,
+        -8.19189775e-06,   4.91640339e-04,   1.62021365e+00]),myMBS.x_t[-1]))
 ################################################
 # test 11
 ################################################
 print("\n\n-------------------------------")
 print("TEST 11...")
-myMBS = mbs.MBSworld('kreisel', connect=True, force_db_setup=False)
+myMBS = mbs.MBSworld('kreisel', connect=False, force_db_setup=False)
 #prepare a standard 
 I = [50.,50.,50.]
 I0 = [1.,1.,1.]
@@ -581,7 +581,7 @@ assert(np.allclose(np.array([  7.99061700e-04,   5.88066100e-01,  -1.94878723e-0
 # general system setup example
 print("\n\n-------------------------------")
 print("TEST 12...")
-myMBS = mbs.MBSworld('chain_6', connect=True, force_db_setup=False)
+myMBS = mbs.MBSworld('chain_6', connect=False, force_db_setup=False)
 b_n = []
 m_n = []
 b_n_max = 6

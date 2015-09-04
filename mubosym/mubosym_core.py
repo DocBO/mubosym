@@ -199,7 +199,28 @@ class MBSbody(object):
         for d in dicts:
             self.pos = self.pos.subs(d)
             self.vel = self.vel.subs(d)
-
+            
+class MBScontrolSignal(object):
+    def __init__(self, expr, name, unit):
+        self.name = name
+        self.expr = expr
+        self.unit = unit
+        self.lamb = None
+        self.value = 0.
+    def get_expr(self):
+        return self.expr        
+    def lambdify(self, args):
+        self.lamb = lambdify(args, self.expr)
+    def get_signal(self, args):
+        return self.lamb(*args)
+    def subs_dict(self,mdict):
+        self.expr = self.expr.subs(mdict) 
+    def calc_signal(self, args):
+        self.value = self.lamb(*args)
+        return self.value
+    def get_signal_value(self):
+        return self.value
+        
 class MBSmarker(object):
     def __init__(self, name, frame, body_name):
         self.name = name
@@ -229,6 +250,9 @@ class MBSmarker(object):
         return self.frame.py_ddt()
     def z_ddt(self):
         return self.frame.pz_ddt()
+    ############
+    # TODO: define psi, theta phi output 
+    #
     #def set_dicts(self, dicts):
     #    for d in dicts:
     #        self.pos = self.pos.subs(d)
@@ -394,9 +418,13 @@ class MBSworld(object):
         self.bodies.update({'world':999})
 
         self.tau_check = 0.
-        self.control_signals = []         # here the numbers are stored
-        self.control_signals_lamb = []    # here the lambdas for signals are stored
-        self.control_signals_expr = []    # here the expressions are created/stored
+#        self.control_signals = []         # here the numbers are stored
+#        self.control_signals_lamb = []    # here the lambdas for signals are stored
+#        self.control_signals_expr = []    # here the expressions are created/stored
+#        self.control_signals_results = []
+#        self.control_signals_unit = []
+#        self.control_signals_name = []
+        self.control_signals_obj = []
         # new obj-paradigm starts here
         self.bodies_obj = {}
         self.marker_obj = {}
@@ -405,9 +433,12 @@ class MBSworld(object):
         self.bodies_obj.update({'world': MBSbody(999,'world', 0., [0.,0.,0.], self.IF_mbs.get_pos_IF(),self.IF_mbs.get_vel_vec_IF(),self.IF_mbs,'',self.IF_mbs,self.IF_mbs)})
         self.add_marker('world_M0', 'world',0.,0.,0.)
 
-    def add_control_signal(self, expr):
-        self.control_signals.append(0.)
-        self.control_signals_expr.append(expr)
+    def add_control_signal(self, expr, name = '', unit = ''):
+        self.control_signals_obj.append(MBScontrolSignal(expr, name, unit))
+#        self.control_signals.append(0.)
+#        self.control_signals_expr.append(expr)
+#        self.control_signals_unit.append(unit)
+#        self.control_signals_name.append(name)
 
     def add_parameter(self, new_para_name, fct_para, fct_para_dt , fct_para_ddt):
         global IF, O, g, t
@@ -1520,10 +1551,14 @@ class MBSworld(object):
             model.set_subs_dicts([self.kindiff_dict, self.parameters_diff])
             model.lambdify_trafo(self.freedoms)
             self.f_models_lamb.append(model.force_lam)
-        for expr in self.control_signals_expr:
-            expr_ = expr.subs(self.kindiff_dict)
-            self.control_signals_lamb.append(lambdify(self.q_flat + self.u_flat,expr_))
-
+        #for expr in self.control_signals_expr:
+        #    expr_ = expr.subs(self.kindiff_dict)
+        #    self.control_signals_lamb.append(lambdify(self.q_flat + self.u_flat,expr_))
+        for oo in self.control_signals_obj:
+            oo.subs_dict(self.kindiff_dict)
+            oo.lambdify(self.q_flat + self.u_flat)
+            #self.control_signals_lamb.append(oo.lamb)
+            
         nums = self.bodies.values()
         nums.sort()
         for n in nums[:-1]:
@@ -1557,8 +1592,8 @@ class MBSworld(object):
             F_T_model, signals = self.f_models_lamb[ii](inp)
             f_t += F_T_model
         #generate the control signals (to control somewhere else)
-        for ii in range(len(self.control_signals_lamb)):
-            self.control_signals[ii] = self.control_signals_lamb[ii](*x)
+        for oo in self.control_signals_obj:
+            v = oo.calc_signal(x)
         #checkpoint output
         if t>self.tau_check:
             self.tau_check+=0.1
@@ -1573,7 +1608,7 @@ class MBSworld(object):
 
     def get_control_signal(self, no):
         try:
-            return self.control_signals[no]
+            return self.control_signals_obj[no].get_signal_value()
         except:
             return 0.
 
@@ -1827,6 +1862,7 @@ class MBSworld(object):
         self.e_rot = []
         self.speed = []
         self.signals = {}
+        self.control_signals_results = []
         self.calc_acc()
 
         for ii in range(self.forces_models_n):
@@ -1840,6 +1876,7 @@ class MBSworld(object):
 
             x_act = hstack((self.x_t[ii,0:self.dof], f_t))
             x_u_act = hstack((self.x_t[ii,0:self.dof*2], f_t))
+            q_flat_u_flat = hstack((self.x_t[ii,0:self.dof*2]))
             x_u_a_act = hstack((self.x_t[ii,0:self.dof*2], self.acc[ii], f_t))
 
             vx = self.pos_cartesians_lambda(*x_act)        #transports x,y,z
@@ -1861,7 +1898,8 @@ class MBSworld(object):
                 F_T_model, out_signals = self.f_models_lamb[ii](x_u_act)
                 self.signals[ii] = vstack((self.signals[ii],out_signals))
 
-
+            self.control_signals_results.append([cf.lamb(*q_flat_u_flat) for cf in self.control_signals_obj])
+            
             self.state = vstack((self.state,vx))
             self.orient = vstack((self.orient,orient))
 
@@ -1960,6 +1998,19 @@ class MBSworld(object):
             lab = plt.xlabel('Time [sec]')
             leg4 = plt.legend(['Alpha [grad]'])
             plt.show()
+
+        elif plots == 'signals':
+            n_signals = len(self.control_signals_obj)
+            for n in range(n_signals):
+                plt.subplot(n_signals, 1, n+1)
+                lines = plt.plot(self.time, array(self.control_signals_results)[:,n])
+                leg = plt.legend(['Signal '+str(n)])
+                lab = plt.xlabel(self.control_signals_obj[n].name+" in "+self.control_signals_obj[n].unit)
+#            plt.subplot(2, 1, 2)
+#            lines = plt.plot(array(self.time, array(self.control_signals_results)[:,1])
+#            lab = plt.xlabel('... [...]')
+#            leg2 = plt.legend(['Signal 1'])
+            plt.show()  
 
     def animate(self, t_max, dt, scale = 4, time_scale = 1, t_ani = 30., labels = False, center = -1, f_scale = 0.1, f_min = 0.2, f_max = 5.):
         #stationary vectors:
