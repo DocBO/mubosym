@@ -14,7 +14,7 @@ import mubosym as mbs
 # general system setup example
 myMBS = mbs.MBSworld('kreisel', connect=True, force_db_setup=False)
 
-#prepare a standard 
+#prepare a standard
 I = [50.,50.,50.]
 I0 = [1.,1.,1.]
 ###################################
@@ -41,10 +41,10 @@ x0[7] = 100.
 #################################################
 # parameters
 g = symbols('g')
-constants = [ g ]          # Parameter definitions 
+constants = [ g ]          # Parameter definitions
 constants_vals = [9.81]     # Numerical value
 
-const_dict = dict(zip(constants, constants_vals))  
+const_dict = dict(zip(constants, constants_vals))
 myMBS.set_const_dict(const_dict)
 
 
@@ -53,7 +53,7 @@ myMBS.set_const_dict(const_dict)
 #def ext_sinus(t):
 #    omega = 0.5*t
 #    return 5000.0*math.sin(omega * t)
-#    
+#
 #def null(t):
 #    return 0.
 #
@@ -78,5 +78,5 @@ x_final = myMBS.x_t[-1]
 # linear analysis of the last state (returns also the jacobian)
 jac = myMBS.calc_lin_analysis_n(len(myMBS.x_t)-1)
 
-myMBS.prepare(save=False)
-myMBS.animate(t_max, dt, scale = 4, time_scale = 1, t_ani = 15, labels = True, plots='standard')
+myMBS.prepare()
+myMBS.animate(t_max, dt, scale = 4, time_scale = 1, t_ani = 15, labels = True)

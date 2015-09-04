@@ -9,8 +9,7 @@ Created on Sun Mar  8 11:50:46 2015
 from __future__ import print_function, absolute_import
 import os.path,sys,time,copy
 
-
-sys.path.insert(0,os.path.realpath(os.path.join(os.path.dirname(__file__)),"../" )
+sys.path.insert(0,os.path.realpath(os.path.join(os.path.dirname(__file__),"../")))
 
 import b_splines_interface #as kennlinie
 import one_body_force_model_interface # as one_body_force_model
@@ -1810,7 +1809,7 @@ class MBSworld(object):
             self.bodies_in_graphics.update({n:v})
         print( "finished ...",end-start )
 
-    def prepare(self, path, save=True):
+    def prepare(self, path='', save=True):
         #transform back to produce a state vector in IF
         n_body = self.n_body
         self.state = hstack(zeros((n_body+1)*3)) # 3 includes 3d cartesians + 1 time
@@ -1879,9 +1878,9 @@ class MBSworld(object):
         if save and not no_pandas:
             # currently only saving is supported....
             if self.name == '':
-                store_filename = path+'/data.h5'
+                store_filename = os.path.realpath(os.path.join(path+'data.h5'))
             else:
-                store_filename = path+'/'+self.name+'.h5'
+                store_filename = os.path.realpath(os.path.join(path,self.name+'.h5'))
             self.store = pd.HDFStore(store_filename,complevel=2, complib='zlib')
             self.store['state'] = pd.DataFrame(self.state[:,:3],columns=['x', 'y', 'z']) # 3 includes 3d cartesians
             self.store['orient'] = pd.DataFrame(self.orient[:,:9],columns=['ex_x', 'ex_y', 'ex_z', 'ey_x', 'ey_y', 'ey_z', 'ez_x', 'ez_y', 'ez_z']) #2 cartesians vectors e_x, e_y

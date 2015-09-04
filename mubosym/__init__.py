@@ -4,7 +4,8 @@ Created on Fri May 29 18:04:30 2015
 
 @author: oliver
 """
-    
+import os
+
 BASE_PATH = os.path.realpath(os.path.join(os.path.dirname(__file__),"../"))
 DATA_PATH = os.path.realpath(os.path.join(BASE_PATH,'data'))
 

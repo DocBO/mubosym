@@ -7,12 +7,11 @@ Created on Tue Apr 14 20:41:09 2015
 import os, sys
 import numpy as np
 from sympy import symbols
-BASE_PATH = os.path.dirname( os.path.realpath ( __file__) )
-DATA_PATH = BASE_PATH + '/data'
-sys.path.append(BASE_PATH+"/mubosym") #python 3 compatibility (later on)
+
+sys.path.insert(0, os.path.realpath(os.path.join(os.path.dirname(__file__),"mubosym")) )
 
 import mubosym as mbs
-mbs.BASE_PATH = BASE_PATH
+
 
 
 ###############################################################
@@ -20,7 +19,7 @@ mbs.BASE_PATH = BASE_PATH
 myMBS = mbs.MBSworld('swing_table', connect=True, force_db_setup=False)
 
 
-#prepare a standard 
+#prepare a standard
 I = [0.,0.,0.]
 
 ######################################
@@ -56,7 +55,7 @@ z = R[2]
 
 for b in myMBS.bodies.keys():
     myMBS.add_damping(b,0.1)
-    
+
 
 equ1 = y
 myMBS.add_geometric_constaint('b3', equ1, 'world_M0', factor)
@@ -70,10 +69,10 @@ myMBS.add_geometric_constaint('b3', equ2, 'world_M0', factor)
 #################################################
 # constants
 g = symbols('g')
-constants = [ g ]          # Parameter definitions 
+constants = [ g ]          # Parameter definitions
 constants_vals = [9.81]     # Numerical value
 
-const_dict = dict(zip(constants, constants_vals))  
+const_dict = dict(zip(constants, constants_vals))
 myMBS.set_const_dict(const_dict)
 
 

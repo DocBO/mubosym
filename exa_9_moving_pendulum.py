@@ -28,7 +28,7 @@ omega = 2.5 #try up to 30
 A = 2.0
 def rotation_inp(t):
     return A*np.sin(omega*t)
-    
+
 def rotation_inp_diff(t):
     return A*omega*np.cos(omega*t)
 
@@ -54,17 +54,15 @@ x0 = np.hstack(( 0. * np.ones(myMBS.dof), 0. * np.ones(myMBS.dof)))
 
 
 for b in myMBS.bodies.keys():
-    myMBS.add_damping(b,0.05)
-    
-
+    myMBS.add_damping(b,0.02)
 
 #################################################
 # constants
 g = symbols('g')
-constants = [ g ]          # Parameter definitions 
+constants = [ g ]          # Parameter definitions
 constants_vals = [9.81]     # Numerical value
 
-const_dict = dict(zip(constants, constants_vals))  
+const_dict = dict(zip(constants, constants_vals))
 myMBS.set_const_dict(const_dict)
 
 
