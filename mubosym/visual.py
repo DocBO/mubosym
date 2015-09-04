@@ -58,8 +58,52 @@ class dummy(scene.visuals.Cube):
 #Spectrogram = create_visual_node(visuals.SpectrogramVisual)
 #SurfacePlot = create_visual_node(visuals.SurfacePlotVisual)
 #Text = create_visual_node(visuals.TextVisual)
-#Tube = create_visual_node(visuals.TubeVisual)
-#
+
+class mbTube(scene.visuals.Tube):
+    """
+    creates a custom tube:
+        create_visual_node(visuals.TubeVisual)
+        
+    :param view: the view as obtained by call to e.g. scene.SceneCanvas().central_widget.add_view()
+    :param path: An array of (x, y, z) points describing the path along which the tube will be extruded.
+    :param radius: the radius
+    :param face_color: the faces color
+    :param tube_points: The number of points in the circle, default is 16
+
+    """
+    def __init__(self,view,radius,path,face_color,tube_points=16,closed=True):
+        """        
+        points : ndarray
+            An array of (x, y, z) points describing the path along which the
+            tube will be extruded.
+        radius : float
+            The radius of the tube. Defaults to 1.0.
+        closed : bool
+            Whether the tube should be closed, joining the last point to the
+            first. Defaults to False.
+        color : Color | ColorArray
+            The color(s) to use when drawing the tube. The same color is
+            applied to each vertex of the mesh surrounding each point of
+            the line. If the input is a ColorArray, the argument will be
+            cycled; for instance if 'red' is passed then the entire tube
+            will be red, or if ['green', 'blue'] is passed then the points
+            will alternate between these colours. Defaults to 'purple'.
+        tube_points : int
+            The number of points in the circle-approximating polygon of the
+            tube's cross section. Defaults to 8.
+        shading : str | None
+            Same as for the `MeshVisual` class. Defaults to 'smooth'.
+        vertex_colors: ndarray | None
+            Same as for the `MeshVisual` class.
+        face_colors: ndarray | None
+            Same as for the `MeshVisual` class.
+        mode : str
+            Same as for the `MeshVisual` class. Defaults to 'triangles'.
+        """
+        super(mbTube, self).__init__(self,radius=radius,points=path,color=face_color,tube_points=tube_points,closed=closed,parent=view)
+
+    def trafo(self,x=0.,y=0.,z=0.,angle=0.,al=0.,be=0.,ga=0.):
+        self.transform = STTransform(translate=[x,y,z])
 
 class mbFrame(scene.XYZAxis):
     """
@@ -69,11 +113,6 @@ class mbFrame(scene.XYZAxis):
     maybee this will become the subvisual in every mbVisual
 
     :param view: the view as obtained by call to e.g. scene.SceneCanvas().central_widget.add_view()
-    :param a: first edge lenght (in x direction)
-    :param b: second edge lenght (in y direction)
-    :param c: third edge lenght (in z direction)
-    :param face_color: the faces color
-    :param edge_color: the edge (wire) color
 
     """
     def __init__(self,view,*args, **kwargs):
