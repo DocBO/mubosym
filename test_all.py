@@ -5,12 +5,6 @@ Created on Thu Sep  3 19:43:00 2015
 @author: oliver
 """
 
-# -*- coding: utf-8 -*-
-"""
-Created on Thu Jun 11 18:54:16 2015
-
-@author: oliver
-"""
 import numpy as np
 from sympy import symbols, sin
 import mubosym as mbs
