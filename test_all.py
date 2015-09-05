@@ -57,9 +57,9 @@ myMBS.add_geometric_constaint('b2', equ1, 'world_M0', factor)
 #################################################
 # constants
 g = symbols('g')
-constants = [ g ]          # Parameter definitions 
+constants = [ g ]          # Parameter definitions
 constants_vals = [9.81]     # Numerical value
-const_dict = dict(zip(constants, constants_vals))  
+const_dict = dict(zip(constants, constants_vals))
 myMBS.set_const_dict(const_dict)
 myMBS.kaneify()
 fixed_frames_in_graphics = ['world_M1']
@@ -78,7 +78,7 @@ print("\n\n-------------------------------")
 print("TEST 2...")
 myMBS = mbs.MBSworld('swing_table', connect=False, force_db_setup=False)
 
-#prepare a standard 
+#prepare a standard
 I = [0.,0.,0.]
 ######################################
 # some loop constraint
@@ -113,9 +113,9 @@ myMBS.add_geometric_constaint('b3', equ2, 'world_M0', factor)
 #################################################
 # constants
 g = symbols('g')
-constants = [ g ]          # Parameter definitions 
+constants = [ g ]          # Parameter definitions
 constants_vals = [9.81]     # Numerical value
-const_dict = dict(zip(constants, constants_vals))  
+const_dict = dict(zip(constants, constants_vals))
 myMBS.set_const_dict(const_dict)
 
 myMBS.kaneify()
@@ -125,7 +125,7 @@ myMBS.inte_grate_full(x0, t_max, dt, mode = 0)
 assert(t_max == myMBS.time[-1])
 assert(np.allclose(np.array([-12.27885932,  13.84937381,  -4.42472966,  -0.9882765 ,
          0.9881176 ,  -0.98782944]),myMBS.x_t[-1]))
-         
+
 ################################################
 # test 3
 ################################################
@@ -150,7 +150,7 @@ for ii in range(len(body))[1:]:
     myMBS.add_body_3d(body[ii], marker[ii-1], 1.0, I, 'rod-1-cardanic', parameters = [1.5,0.])
     myMBS.add_marker(marker[ii], body[ii],  0.,0.,0.)
     myMBS.add_force_special(body[ii], 'grav')
-    
+
 x0 = np.hstack(( 1. * np.ones(myMBS.dof), 0. * np.ones(myMBS.dof)))
 factor = 5.
 R = myMBS.get_frame('world_M0')
@@ -166,10 +166,10 @@ myMBS.add_reflective_wall(body[1], eqn, 'world_M0', 1000, .2, +1.)
 #################################################
 # constants
 g = symbols('g')
-constants = [ g ]          # Parameter definitions 
+constants = [ g ]          # Parameter definitions
 constants_vals = [9.81]     # Numerical value
 
-const_dict = dict(zip(constants, constants_vals))  
+const_dict = dict(zip(constants, constants_vals))
 myMBS.set_const_dict(const_dict)
 
 body_frames_in_graphics = [body[0], body[1], body[2]]
@@ -179,10 +179,9 @@ myMBS.prep_lambdas(body_frames_in_graphics, fixed_frames_in_graphics)
 dt = 0.01  # 10 ms for a nice animation result
 t_max = 30.
 myMBS.inte_grate_full(x0, t_max, dt, mode = 0)
-x_final = myMBS.x_t[-1]
+
 assert(t_max == myMBS.time[-1])
-assert(np.allclose(np.array([-0.02253284,  0.48113244,  0.0802598 ,  1.54017102, -0.78752434,
-        1.10845035]),myMBS.x_t[-1]))
+assert(np.allclose(np.array([-0.02253284,  0.48113244,  0.0802598 ,  1.54017102, -0.78752434, 1.10845035]),myMBS.x_t[-1]))
 ################################################
 # test 4
 ################################################
@@ -217,9 +216,9 @@ x0 = np.hstack(( 1. * np.ones(myMBS.dof), 1. * np.ones(myMBS.dof)))
 #################################################
 # constants
 g = symbols('g')
-constants = [ g ]          # Parameter definitions 
+constants = [ g ]          # Parameter definitions
 constants_vals = [9.81]     # Numerical value
-const_dict = dict(zip(constants, constants_vals))  
+const_dict = dict(zip(constants, constants_vals))
 myMBS.set_const_dict(const_dict)
 
 body_frames_in_graphics = [b_n[0],b_n[1],b_n[2]]
@@ -248,7 +247,7 @@ omega = 1.0
 A = 5.5
 def rotation_inp(t):
     return A*t #np.sin(omega*t)
-    
+
 def rotation_inp_diff(t):
     return A #*omega*np.cos(omega*t)
 
@@ -270,13 +269,13 @@ fixed_frames_in_graphics = []
 
 for b in myMBS.bodies.keys():
     myMBS.add_damping(b,0.5)
-    
+
 #################################################
 # constants
 g = symbols('g')
-constants = [ g ]          # Parameter definitions 
+constants = [ g ]          # Parameter definitions
 constants_vals = [9.81]     # Numerical value
-const_dict = dict(zip(constants, constants_vals))  
+const_dict = dict(zip(constants, constants_vals))
 myMBS.set_const_dict(const_dict)
 myMBS.kaneify()
 myMBS.prep_lambdas(body_frames_in_graphics, fixed_frames_in_graphics)
@@ -307,16 +306,16 @@ myMBS.add_body_3d('planet2','sun_M1', 10.0, I , 'xz-plane', parameters = [], gra
 myMBS.add_force_spline_r('sun','planet1', DATA_PATH+'/force_kl1.dat', [0., -1.0])
 myMBS.add_force_spline_r('sun','planet2', DATA_PATH+'/force_kl1.dat', [0., -1.0])
 
-x0 = np.hstack(( 0.,0.,1.,1.,-1.,-1., 0.,0.,1.,0.,0.,1.))      
+x0 = np.hstack(( 0.,0.,1.,1.,-1.,-1., 0.,0.,1.,0.,0.,1.))
 body_frames_in_graphics = ['sun','planet1','planet2']
 fixed_frames_in_graphics = []
 
 #################################################
 # constants
 g = symbols('g')
-constants = [ g ]          # Parameter definitions 
+constants = [ g ]          # Parameter definitions
 constants_vals = [9.81]     # Numerical value
-const_dict = dict(zip(constants, constants_vals))  
+const_dict = dict(zip(constants, constants_vals))
 myMBS.set_const_dict(const_dict)
 myMBS.kaneify()
 myMBS.prep_lambdas(body_frames_in_graphics, fixed_frames_in_graphics)
@@ -355,7 +354,7 @@ A = -0.15
 omega = 0.8
 def rotation_inp(t):
     return A*np.sin(omega*t)
-    
+
 def rotation_inp_diff(t):
     return A*omega*np.cos(omega*t)
 
@@ -369,16 +368,16 @@ def rotation_inp_expr():
 k = interp(filename = DATA_PATH+'/vel_01.dat')
 #high end definition of static variables...
 @mbs.static_vars(t_p=0, diff_p=0)
-def lateral_inp(t): 
+def lateral_inp(t):
     #return -20.
     velocity = myMBS.get_control_signal(0)
     v_soll = k.f_interp(t)
     diff = (v_soll-velocity)/10.0
     delt = (t-lateral_inp.t_p)
-    diff = (lateral_inp.diff_p *0.5 + diff* delt) / (delt + 0.5) 
+    diff = (lateral_inp.diff_p *0.5 + diff* delt) / (delt + 0.5)
     lateral_inp.diff_p = diff
     lateral_inp.t_p = t
-    return -2000*diff    
+    return -2000*diff
 def lateral_inp_diff(t):
     return 0.
 def lateral_inp_diff_2(t):
@@ -423,9 +422,9 @@ bodies_in_graphics = {'tire': 'tire'}
 ##################################################################
 # constant parameters
 g = symbols('g')
-constants = [ g ]          # Parameter definitions 
+constants = [ g ]          # Parameter definitions
 constants_vals = [9.81]     # Numerical value
-const_dict = dict(zip(constants, constants_vals))  
+const_dict = dict(zip(constants, constants_vals))
 myMBS.set_const_dict(const_dict)
 myMBS.kaneify()
 myMBS.prep_lambdas(moving_frames_in_graphics, fixed_frames_in_graphics, forces_in_graphics, bodies_in_graphics)
@@ -456,7 +455,7 @@ omega = 2.5 #try up to 30
 A = 2.0
 def rotation_inp(t):
     return A*np.sin(omega*t)
-    
+
 def rotation_inp_diff(t):
     return A*omega*np.cos(omega*t)
 
@@ -475,9 +474,9 @@ for b in myMBS.bodies.keys():
 #################################################
 # constants
 g = symbols('g')
-constants = [ g ]          # Parameter definitions 
+constants = [ g ]          # Parameter definitions
 constants_vals = [9.81]     # Numerical value
-const_dict = dict(zip(constants, constants_vals))  
+const_dict = dict(zip(constants, constants_vals))
 myMBS.set_const_dict(const_dict)
 myMBS.kaneify()
 body_frames_in_graphics = ['rot_M0','pendulum']
@@ -516,15 +515,15 @@ myMBS.add_body_3d('rod_4', 'rod_3_M0', 1.0, I, 'rod-1-revolute', parameters = [0
 myMBS.add_force_special('rod_4', 'grav')
 myMBS.add_torque_3d('rod_4', 'rotation-stiffness-1', parameters = [100.])
 
-x0 = np.hstack(( np.pi / 3. * np.ones(myMBS.dof), 1.0 * np.ones(myMBS.dof))) 
+x0 = np.hstack(( np.pi / 3. * np.ones(myMBS.dof), 1.0 * np.ones(myMBS.dof)))
 for b in myMBS.bodies.keys():
     myMBS.add_damping(b,5.0)
 #################################################
 # parameters
 g = symbols('g')
-constants = [ g ]          # Parameter definitions 
+constants = [ g ]          # Parameter definitions
 constants_vals = [9.81]     # Numerical value
-const_dict = dict(zip(constants, constants_vals))  
+const_dict = dict(zip(constants, constants_vals))
 myMBS.set_const_dict(const_dict)
 myMBS.kaneify()
 
@@ -559,9 +558,9 @@ x0[7] = 100.
 #################################################
 # parameters
 g = symbols('g')
-constants = [ g ]          # Parameter definitions 
+constants = [ g ]          # Parameter definitions
 constants_vals = [9.81]     # Numerical value
-const_dict = dict(zip(constants, constants_vals))  
+const_dict = dict(zip(constants, constants_vals))
 myMBS.set_const_dict(const_dict)
 myMBS.kaneify()
 moving_frames_in_graphics = ['B3']
@@ -588,7 +587,7 @@ b_n_max = 6
 for ii in range(b_n_max):
     b_n.append(str(ii))
     m_n.append(str(ii)+"_M0")
-#prepare a standard 
+#prepare a standard
 I = [0.,0.,0.]
 ######################################
 # large chain
@@ -605,9 +604,9 @@ for b in myMBS.bodies.keys():
 #################################################
 # constants
 g = symbols('g')
-constants = [ g ]          # Parameter definitions 
+constants = [ g ]          # Parameter definitions
 constants_vals = [9.81]     # Numerical value
-const_dict = dict(zip(constants, constants_vals))  
+const_dict = dict(zip(constants, constants_vals))
 myMBS.set_const_dict(const_dict)
 fixed_frames_in_graphics = ['world_M1']
 frames_in_graphics = []
@@ -629,7 +628,7 @@ assert(np.allclose(np.array([-0.0104617 ,  6.26186732,  6.32782105,  6.22693558,
 print("\n\n-------------------------------")
 print("TEST 13...")
 myMBS = mbs.MBSworld('new_constraint', connect=False, force_db_setup=False)
-#prepare a standard 
+#prepare a standard
 I = [0.,0.,0.]
 ######################################
 # choose
@@ -659,9 +658,9 @@ if setup == 'two-dof':
 #################################################
 # constants
 g = symbols('g')
-constants = [ g ]           # Parameter definitions 
+constants = [ g ]           # Parameter definitions
 constants_vals = [9.81]     # Numerical value
-const_dict = dict(zip(constants, constants_vals))  
+const_dict = dict(zip(constants, constants_vals))
 myMBS.set_const_dict(const_dict)
 myMBS.kaneify()
 fixed_frames_in_graphics = ['world_M1']
@@ -675,4 +674,3 @@ assert(t_max == myMBS.time[-1])
 assert(np.allclose(np.array([ 0.28300594, -0.95923776, -4.16528328, -1.22898956]),myMBS.x_t[-1]))
 
 print("\n\n All tests ok !!! you are allowed to do your pull request ... but only in develop branch")
-       
