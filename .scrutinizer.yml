@@ -1,0 +1,9 @@
+build:
+    tests:
+        override:
+            -
+                command: ./run-tests.sh
+                coverage:
+                    file: .coverage
+                    config: .coveragerc
+                    format: py-cc
