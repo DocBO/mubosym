@@ -12,14 +12,23 @@ if no vpython is installed, this can be used as a preliminary solution...
 
 """
 
-#from PyQt5 import QtGui
+#from PyQt5 import QtCore,QtGui
 
 import pyqtgraph as pg
 
 from pyqtgraph import QtGui
 
-if pg.Qt.QtVersion.startswith("4"):
-    print( "using PyQt4" )
+___PyQt_VERSION__ = pg.Qt.QtVersion
+
+if ___PyQt_VERSION__.startswith("4"):
+    print( "using PyQt4:", ___PyQt_VERSION__ )
+elif ___PyQt_VERSION__.startswith("5"):
+    print( "using PyQt5:", ___PyQt_VERSION__ )
+else:
+    assert None    
+
+print( "using pyqtgraph:", pg.__version__ )
+
 
 class mbWidget(QtGui.QWidget):
     """
