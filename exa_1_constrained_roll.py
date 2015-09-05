@@ -4,16 +4,10 @@ Created on Thu Jun 11 18:54:16 2015
 
 @author: oliver
 """
-import os, sys
+
 import numpy as np
 from sympy import symbols
-
-BASE_PATH = os.path.dirname( os.path.realpath ( __file__) )
-DATA_PATH = BASE_PATH + '/data'
-sys.path.append(BASE_PATH+"/mubosym") #python 3 compatibility (later on)
-
 import mubosym as mbs
-mbs.BASE_PATH = BASE_PATH
 
 ###############################################################
 # general system setup example
@@ -87,7 +81,7 @@ myMBS.inte_grate_full(x0, t_max, dt, mode = 0, tolerance = 1e-0)
 jac = myMBS.calc_lin_analysis_n(len(myMBS.x_t)-1)
 
 
-myMBS.prepare(DATA_PATH, save=True)
+myMBS.prepare(mbs.DATA_PATH, save=True)
 ################################################
 # plotting example
 #myMBS.plotting(t_max, dt, plots='standard')

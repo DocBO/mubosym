@@ -4,16 +4,11 @@ Created on Tue Apr 14 20:41:09 2015
 
 @author: oliver
 """
-import os, sys
+
 import numpy as np
 from sympy import symbols, sin
 
-BASE_PATH = os.path.dirname( os.path.realpath ( __file__) )
-DATA_PATH = BASE_PATH + '/data'
-sys.path.append(BASE_PATH+"/mubosym") #python 3 compatibility (later on)
-
 import mubosym as mbs
-mbs.BASE_PATH = BASE_PATH
 
 ###############################################################
 # general system setup example
@@ -27,7 +22,7 @@ I_car = [500.,3000.,1500.]
 I_0 = [0.,0.,0.] 
 I_tire = [1.,1.,1.]
 
-k = mbs.interp1d_interface.interp(filename = DATA_PATH+"/vel_01.dat")
+k = mbs.interp1d_interface.interp(filename = mbs.DATA_PATH+"/vel_01.dat")
 #high end definition of static variables...
 @mbs.static_vars(t_p=0, diff_p=0)
 def lateral_inp(t): 
@@ -174,6 +169,6 @@ jac = myMBS.calc_lin_analysis_n(len(myMBS.x_t)-1)
 
 inp = raw_input("Weiter zur Animation (return)...")
 
-myMBS.prepare(DATA_PATH, save=True)
+myMBS.prepare(mbs.DATA_PATH, save=True)
 #myMBS.plotting(t_max, dt, plots='tire')
 a = myMBS.animate(t_max, dt, scale = 4, time_scale = 1, t_ani = 35., labels = True, center = 0)

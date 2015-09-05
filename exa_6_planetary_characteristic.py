@@ -4,16 +4,9 @@ Created on Tue Apr 14 20:41:09 2015
 
 @author: oliver
 """
-import os, sys
 import numpy as np
 from sympy import symbols
-
-BASE_PATH = os.path.dirname( os.path.realpath ( __file__) )
-DATA_PATH = BASE_PATH + '/data'
-sys.path.append(BASE_PATH+"/mubosym") #python 3 compatibility (later on)
-
 import mubosym as mbs
-mbs.BASE_PATH = BASE_PATH
 
 
 
@@ -35,8 +28,8 @@ myMBS.add_body_3d('planet1','sun_M1', 10.0, I , 'xz-plane', parameters = [], gra
 myMBS.add_body_3d('planet2','sun_M1', 10.0, I , 'xz-plane', parameters = [], graphics = False)
 
 
-myMBS.add_force_spline_r('sun','planet1', DATA_PATH+'/force_kl1.dat', [0., -1.0])
-myMBS.add_force_spline_r('sun','planet2', DATA_PATH+'/force_kl1.dat', [0., -1.0])
+myMBS.add_force_spline_r('sun','planet1', mbs.DATA_PATH+'/force_kl1.dat', [0., -1.0])
+myMBS.add_force_spline_r('sun','planet2', mbs.DATA_PATH+'/force_kl1.dat', [0., -1.0])
 
 
 x0 = np.hstack(( 0.,0.,1.,1.,-1.,-1., 0.,0.,1.,0.,0.,1.))
@@ -72,5 +65,5 @@ myMBS.inte_grate_full(x0, t_max, dt, mode = 0)
 x_final = myMBS.x_t[-1]
 ################################################
 
-myMBS.prepare(DATA_PATH, save=True)
+myMBS.prepare(mbs.DATA_PATH, save=True)
 myMBS.animate(t_max, dt, scale = 4, time_scale = 1, t_ani = 20.0)

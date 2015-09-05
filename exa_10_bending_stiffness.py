@@ -4,16 +4,9 @@ Created on Tue Jun  9 23:07:13 2015
 
 @author: oliver
 """
-import os, sys
 import numpy as np
 from sympy import symbols, sin
-
-BASE_PATH = os.path.dirname( os.path.realpath ( __file__) )
-DATA_PATH = BASE_PATH + '/data'
-sys.path.append(BASE_PATH+"/mubosym") #python 3 compatibility (later on)
-
 import mubosym as mbs
-mbs.BASE_PATH = BASE_PATH
 
 ###############################################################
 # general system setup example
@@ -94,7 +87,7 @@ x_final = myMBS.x_t[-1]
 # linear analysis of the last state (returns also the jacobian)
 jac = myMBS.calc_lin_analysis_n(len(myMBS.x_t)-1)
 
-myMBS.prepare(DATA_PATH, save=True)
+myMBS.prepare(mbs.DATA_PATH, save=True)
 #myMBS.animate(t_max, dt, scale = 4, time_scale = 1, t_ani = 30.0, labels = True, plots='standard')
 #myMBS.show_figures(t_max, dt)
 myMBS.animate(t_max, dt, scale = 4, time_scale = 1.0, t_ani = 20.0)

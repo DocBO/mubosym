@@ -4,15 +4,9 @@ Created on Tue Apr 14 20:41:09 2015
 
 @author: oliver
 """
-import os, sys
 import numpy as np
 from sympy import symbols
-BASE_PATH = os.path.dirname( os.path.realpath ( __file__) )
-DATA_PATH = BASE_PATH + '/data'
-sys.path.append(BASE_PATH+"/mubosym") #python 3 compatibility (later on)
-
 import mubosym as mbs
-mbs.BASE_PATH = BASE_PATH
 
 
 ###############################################################
@@ -120,5 +114,5 @@ jac = myMBS.calc_lin_analysis_n(len(myMBS.x_t)-1)
 
 
 
-myMBS.prepare(DATA_PATH, save=True)
+myMBS.prepare(mbs.DATA_PATH, save=True)
 myMBS.animate(t_max, dt, scale = 4, time_scale = 1, t_ani = 30.0)
