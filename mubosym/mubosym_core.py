@@ -1652,25 +1652,6 @@ class MBSworld(object):
         f_t = [t] + self.parameters
         return lambdify(self.q_flat+f_t, frame_coords)
 
-    def res_fixed_marker_frames(self, oo):
-        N_fixed = oo.get_frame()
-        frame_coords = []
-        frame_coords.append( oo.x().subs(self.const_dict))
-        frame_coords.append( oo.y().subs(self.const_dict))
-        frame_coords.append( oo.z().subs(self.const_dict))
-        ex_x = N_fixed.x.dot(IF.x)
-        ex_y = N_fixed.x.dot(IF.y)
-        ex_z = N_fixed.x.dot(IF.z)
-        ey_x = N_fixed.y.dot(IF.x)
-        ey_y = N_fixed.y.dot(IF.y)
-        ey_z = N_fixed.y.dot(IF.z)
-        ez_x = N_fixed.z.dot(IF.x)
-        ez_y = N_fixed.z.dot(IF.y)
-        ez_z = N_fixed.z.dot(IF.z)
-        frame_coords = frame_coords + [ex_x,ex_y,ex_z,ey_x,ey_y,ey_z,ez_x,ez_y,ez_z]
-        f_t = [t] + self.parameters
-        return lambdify(self.q_flat+f_t, frame_coords)
-
     def res_body_marker_pos_IF(self):
         global IF, O, g, t
         IF_coords = []
