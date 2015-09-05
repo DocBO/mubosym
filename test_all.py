@@ -181,8 +181,7 @@ t_max = 30.
 myMBS.inte_grate_full(x0, t_max, dt, mode = 0)
 
 assert(t_max == myMBS.time[-1])
-assert(np.allclose(np.array([-0.02253284,  0.48113244,  0.0802598 ,  1.54017102, -0.78752434,
-        1.10845035]),myMBS.x_t[-1]))
+assert(np.allclose(np.array([-0.02253284,  0.48113244,  0.0802598 ,  1.54017102, -0.78752434, 1.10845035]),myMBS.x_t[-1]))
 ################################################
 # test 4
 ################################################
@@ -307,16 +306,16 @@ myMBS.add_body_3d('planet2','sun_M1', 10.0, I , 'xz-plane', parameters = [], gra
 myMBS.add_force_spline_r('sun','planet1', DATA_PATH+'/force_kl1.dat', [0., -1.0])
 myMBS.add_force_spline_r('sun','planet2', DATA_PATH+'/force_kl1.dat', [0., -1.0])
 
-x0 = np.hstack(( 0.,0.,1.,1.,-1.,-1., 0.,0.,1.,0.,0.,1.))      
+x0 = np.hstack(( 0.,0.,1.,1.,-1.,-1., 0.,0.,1.,0.,0.,1.))
 body_frames_in_graphics = ['sun','planet1','planet2']
 fixed_frames_in_graphics = []
 
 #################################################
 # constants
 g = symbols('g')
-constants = [ g ]          # Parameter definitions 
+constants = [ g ]          # Parameter definitions
 constants_vals = [9.81]     # Numerical value
-const_dict = dict(zip(constants, constants_vals))  
+const_dict = dict(zip(constants, constants_vals))
 myMBS.set_const_dict(const_dict)
 myMBS.kaneify()
 myMBS.prep_lambdas(body_frames_in_graphics, fixed_frames_in_graphics)
