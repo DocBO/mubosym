@@ -11,16 +11,10 @@ Created on Thu Jun 11 18:54:16 2015
 
 @author: oliver
 """
-import os, sys
 import numpy as np
 from sympy import symbols, sin
-
-BASE_PATH = os.path.dirname( os.path.realpath ( __file__) )
-DATA_PATH = BASE_PATH + '/data'
-sys.path.append(BASE_PATH+"/mubosym") #python 3 compatibility (later on)
 import mubosym as mbs
 from interp1d_interface import interp
-mbs.BASE_PATH = BASE_PATH
 
 ################################################
 # test 1
@@ -303,8 +297,8 @@ myMBS.add_marker('sun_M1', 'sun', 0.,0.,0.)
 myMBS.add_force_special('sun', 'grav')
 myMBS.add_body_3d('planet1','sun_M1', 10.0, I , 'xz-plane', parameters = [], graphics = False) #[np.pi/2., 2.0])
 myMBS.add_body_3d('planet2','sun_M1', 10.0, I , 'xz-plane', parameters = [], graphics = False)
-myMBS.add_force_spline_r('sun','planet1', DATA_PATH+'/force_kl1.dat', [0., -1.0])
-myMBS.add_force_spline_r('sun','planet2', DATA_PATH+'/force_kl1.dat', [0., -1.0])
+myMBS.add_force_spline_r('sun','planet1', mbs.DATA_PATH+'/force_kl1.dat', [0., -1.0])
+myMBS.add_force_spline_r('sun','planet2', mbs.DATA_PATH+'/force_kl1.dat', [0., -1.0])
 
 x0 = np.hstack(( 0.,0.,1.,1.,-1.,-1., 0.,0.,1.,0.,0.,1.))
 body_frames_in_graphics = ['sun','planet1','planet2']
@@ -365,7 +359,7 @@ def rotation_inp_expr():
     t, A = symbols('t A')
     return A*sin(1.0*t)
 
-k = interp(filename = DATA_PATH+'/vel_01.dat')
+k = interp(filename = mbs.DATA_PATH+'/vel_01.dat')
 #high end definition of static variables...
 @mbs.static_vars(t_p=0, diff_p=0)
 def lateral_inp(t):
@@ -393,8 +387,8 @@ myMBS.add_body_3d('tire','tire_carrier_M0', 1.0, I_tire , 'revolute', parameters
 myMBS.add_force_special('tire_carrier', 'grav')
 myMBS.add_force_special('tire', 'grav')
 
-myMBS.add_force_spline_r('tire_carrier', 'car_body_M0', DATA_PATH+"/force_spring.dat", [0.8, 1.0])
-myMBS.add_force_spline_v('tire_carrier', 'car_body_M0', DATA_PATH+"/force_damper.dat", [1.0])
+myMBS.add_force_spline_r('tire_carrier', 'car_body_M0', mbs.DATA_PATH+"/force_spring.dat", [0.8, 1.0])
+myMBS.add_force_spline_v('tire_carrier', 'car_body_M0', mbs.DATA_PATH+"/force_damper.dat", [1.0])
 
 myMBS.add_one_body_force_model('tiremodel', 'tire', 'tire_carrier_M0', 'tire')
 

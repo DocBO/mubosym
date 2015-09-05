@@ -4,12 +4,8 @@ Created on Tue Apr 14 20:41:09 2015
 
 @author: oliver
 """
-import os, sys
 import numpy as np
 from sympy import symbols
-
-sys.path.insert(0, os.path.realpath(os.path.join(os.path.dirname(__file__),"mubosym")) )
-
 import mubosym as mbs
 
 
@@ -105,7 +101,7 @@ jac = myMBS.calc_lin_analysis_n(len(myMBS.x_t)-1)
 
 
 
-myMBS.prepare(DATA_PATH, save=False)
+myMBS.prepare(mbs.DATA_PATH, save=False)
 myMBS.animate(t_max, dt, scale = 4, time_scale = 1, t_ani = 20.0)
 
 myMBS.linearize(x_op, a_op)#, quad = True)

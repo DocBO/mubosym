@@ -4,12 +4,17 @@ Created on Fri May 29 18:04:30 2015
 
 @author: oliver
 """
-import os
+import os, sys
 
 BASE_PATH = os.path.realpath(os.path.join(os.path.dirname(__file__),"../"))
+LOCAL_PATH = os.path.realpath(os.path.join(os.path.dirname(__file__),"./"))
 DATA_PATH = os.path.realpath(os.path.join(BASE_PATH,'data'))
 
-from symTools import matrix_to_str, str_to_matrix, world_to_list, list_to_world
+sys.path.append(BASE_PATH)
+sys.path.append(LOCAL_PATH)
+sys.path.append(DATA_PATH)
+
+
 from mubosym_core import MBSworld
 
 def static_vars(**kwargs):

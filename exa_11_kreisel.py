@@ -4,11 +4,9 @@ Created on Tue Jun  9 23:07:13 2015
 
 @author: oliver
 """
-
 import numpy as np
 from sympy import symbols
 import mubosym as mbs
-
 
 ###############################################################
 # general system setup example
@@ -78,5 +76,5 @@ x_final = myMBS.x_t[-1]
 # linear analysis of the last state (returns also the jacobian)
 jac = myMBS.calc_lin_analysis_n(len(myMBS.x_t)-1)
 
-myMBS.prepare()
+myMBS.prepare(mbs.DATA_PATH, save = True)
 myMBS.animate(t_max, dt, scale = 4, time_scale = 1, t_ani = 15, labels = True)

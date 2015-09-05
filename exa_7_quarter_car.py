@@ -4,17 +4,12 @@ Created on Tue Apr 14 20:41:09 2015
 
 @author: oliver
 """
-import os, sys
+
 import numpy as np
 from sympy import symbols, sin
-
-BASE_PATH = os.path.dirname( os.path.realpath ( __file__) )
-DATA_PATH = BASE_PATH + '/data'
-sys.path.append(BASE_PATH+"/mubosym") #python 3 compatibility (later on)
-
 import mubosym as mbs
 from interp1d_interface import interp
-mbs.BASE_PATH = BASE_PATH
+
 
 ###############################################################
 # general system setup example
@@ -56,7 +51,7 @@ def rotation_inp_expr():
     t, A = symbols('t A')
     return A*sin(1.0*t)
 
-k = interp(filename = DATA_PATH+'/vel_01.dat')
+k = interp(filename = mbs.DATA_PATH+'/vel_01.dat')
 #high end definition of static variables...
 @mbs.static_vars(t_p=0, diff_p=0)
 def lateral_inp(t): 
@@ -93,8 +88,8 @@ myMBS.add_force_special('tire', 'grav')
 #myMBS.add_force_special('tire_carrier', 'spring-damper-axes', parameters = [20000., -0.9, 500.])
 #myMBS.add_force('tire_carrier', 'car_body_M0', parameters = [20000., 0.8, 700.])
 
-myMBS.add_force_spline_r('tire_carrier', 'car_body_M0', DATA_PATH+"/force_spring.dat", [0.8, 1.0])
-myMBS.add_force_spline_v('tire_carrier', 'car_body_M0', DATA_PATH+"/force_damper.dat", [1.0])
+myMBS.add_force_spline_r('tire_carrier', 'car_body_M0', mbs.DATA_PATH+"/force_spring.dat", [0.8, 1.0])
+myMBS.add_force_spline_v('tire_carrier', 'car_body_M0', mbs.DATA_PATH+"/force_damper.dat", [1.0])
 
 myMBS.add_one_body_force_model('tiremodel', 'tire', 'tire_carrier_M0', 'tire')
 
@@ -106,6 +101,8 @@ vel_1 = myMBS.get_body('tire').get_vel_magnitude()
 myMBS.add_control_signal(vel_1, "Geschw.", "m/s")
 dist_z = myMBS.get_body('tire').z()
 myMBS.add_control_signal(dist_z, "Abstand zur Spur", "m")
+dist_x = myMBS.get_body('tire').x()
+myMBS.add_control_signal(dist_x, "Fahrstrecke", "m")
 ##################################
 # try to add into model
 m1 = myMBS.get_model('tiremodel')
@@ -162,8 +159,9 @@ x_final = myMBS.x_t[-1]
 jac = myMBS.calc_lin_analysis_n(len(myMBS.x_t)-1)
 
 
-myMBS.prepare(DATA_PATH, save=True)
+myMBS.prepare(mbs.DATA_PATH, save=True)
 myMBS.plotting(t_max, dt, plots='signals')
+myMBS.plotting(t_max, dt, plots='tire')
 #x = myMBS.animate(t_max, dt, scale = 4, time_scale = 1.0, labels = True, t_ani = 30., center = 2)
 
 
