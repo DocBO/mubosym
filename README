@@ -1,12 +1,15 @@
 
 Multibody Simulation with Python
---------------------------------------------------------------------------------------------------------
+--------------------------------
+
 Projectname: mubosym
 
 Description:
-The project aim is to make multibody simulation possible from scratch for python (at the moment 2.7.X).
-The system setup should be simple and possible even for beginners. On the other hand no limitations for complexity.
 
+ The project aim is to make multibody simulation possible from scratch for python (at the moment 2.7.X).
+ The system setup should be simple and possible even for beginners. On the other hand no limitations for complexity.
+
+As python environment we recommend on Windows pythonxy distribution (full version comes with all needed packages) and on linux anaconda distribution.
 
 Dependencies:
  - numpy (1.9.2)
@@ -14,15 +17,14 @@ Dependencies:
  - matplotlib 
  - sympy (0.7.6)
  - vpython (6.11) (from vpython.org or via anaconda on linux systems)
-   (vpython has some nasty dependencies itself: wx, python-boost)
+ (vpython has some nasty dependencies itself: wx, python-boost)
 
 Optional dependency for postprocessing of data:
  - pandas
 
-
-Docu: /build/html/index.html
-Slides for intro: /talk_at_europython_2015.pdf
-
+Docu:
+ /build/html/index.html
+ Slides for intro: /talk_at_europython_2015.pdf
 
 Project folder structure:
 
