@@ -429,8 +429,8 @@ joints[-1].rot_frame = 2
 joints.append(MBSjoint('free-6'))
 joints[-1].define_freedoms([joints[-1].phi, joints[-1].theta, joints[-1].psi, joints[-1].x, joints[-1].y, joints[-1].z])
 joints[-1].define_constants([])
-joints[-1].trans_frame = 1
-joints[-1].rot_frame = 2
+joints[-1].trans_frame = 0
+joints[-1].rot_frame = 0
 
 joints_names = [oo.name for oo in joints]
 def_joints = dict(zip(joints_names, joints))
