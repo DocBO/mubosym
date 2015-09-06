@@ -21,15 +21,15 @@ I = [0.,0.,0.]
 ######################################
 # some loop constraint
 myMBS.add_marker('world_M1','world', 1.,0.,0.)
-myMBS.add_body_3d('b1','world_M0', 1.0, I, 'rod-1-cardanic', parameters = [1.0,0.])
+myMBS.add_body_3d('b1','world_M0', 1.0, I, 'rod-1-cardanic', parameters = [-1.0,0.])
 myMBS.add_force_special('b1', 'grav')
 #
 myMBS.add_marker('b1_M0','b1', 0.,0.,0.)
-myMBS.add_body_3d('b2', 'b1_M0', 1.0, I, 'rod-1-cardanic', parameters = [1.5,0.])
+myMBS.add_body_3d('b2', 'b1_M0', 1.0, I, 'rod-1-cardanic', parameters = [-1.5,0.])
 myMBS.add_force_special('b2', 'grav')
 
 myMBS.add_marker('b2_M0','b2', 0.,0.,0.)
-myMBS.add_body_3d('b3', 'b2_M0', 1.0, I, 'rod-1-cardanic', parameters = [1.0,0.])
+myMBS.add_body_3d('b3', 'b2_M0', 1.0, I, 'rod-1-cardanic', parameters = [-1.0,0.])
 myMBS.add_force_special('b3', 'grav')
 
 

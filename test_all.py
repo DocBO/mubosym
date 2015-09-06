@@ -22,9 +22,9 @@ I = [0.,0.,0.]
 ######################################
 # some loop constraint
 myMBS.add_marker('world_M1','world', 0.,0.,0., 0., 0.,0.)
-myMBS.add_body_3d('b1','world_M1', 1.0, I, 'rod-1-cardanic-efficient', parameters = [1.0,0.])
+myMBS.add_body_3d('b1','world_M1', 1.0, I, 'rod-1-cardanic-efficient', parameters = [-1.0,0.])
 myMBS.add_marker('b1_M0','b1', 0.,0.,0.)
-myMBS.add_body_3d('b2', 'b1_M0', 1.0, I, 'rod-1-cardanic-efficient', parameters = [3.0,0.])
+myMBS.add_body_3d('b2', 'b1_M0', 1.0, I, 'rod-1-cardanic-efficient', parameters = [-3.0,0.])
 myMBS.add_force_special('b2', 'grav')
 
 ######################################
@@ -71,15 +71,15 @@ I = [0.,0.,0.]
 ######################################
 # some loop constraint
 myMBS.add_marker('world_M1','world', 1.,0.,0.)
-myMBS.add_body_3d('b1','world_M0', 1.0, I, 'rod-1-cardanic', parameters = [1.0,0.])
+myMBS.add_body_3d('b1','world_M0', 1.0, I, 'rod-1-cardanic', parameters = [-1.0,0.])
 myMBS.add_force_special('b1', 'grav')
 #
 myMBS.add_marker('b1_M0','b1', 0.,0.,0.)
-myMBS.add_body_3d('b2', 'b1_M0', 1.0, I, 'rod-1-cardanic', parameters = [1.5,0.])
+myMBS.add_body_3d('b2', 'b1_M0', 1.0, I, 'rod-1-cardanic', parameters = [-1.5,0.])
 myMBS.add_force_special('b2', 'grav')
 
 myMBS.add_marker('b2_M0','b2', 0.,0.,0.)
-myMBS.add_body_3d('b3', 'b2_M0', 1.0, I, 'rod-1-cardanic', parameters = [1.0,0.])
+myMBS.add_body_3d('b3', 'b2_M0', 1.0, I, 'rod-1-cardanic', parameters = [-1.0,0.])
 myMBS.add_force_special('b3', 'grav')
 x0 = np.array([-13.73437514,  15.30494211,  -5.87985813,   0.81904538,
         -0.81998223,   0.82150335])
@@ -135,7 +135,7 @@ myMBS.add_force(body[0],'world_M0', parameters = [100.,0.,0.])
 myMBS.add_marker(marker[0], body[0], 0.,0.,0.)
 
 for ii in range(len(body))[1:]:
-    myMBS.add_body_3d(body[ii], marker[ii-1], 1.0, I, 'rod-1-cardanic', parameters = [1.5,0.])
+    myMBS.add_body_3d(body[ii], marker[ii-1], 1.0, I, 'rod-1-cardanic', parameters = [-1.5,0.])
     myMBS.add_marker(marker[ii], body[ii],  0.,0.,0.)
     myMBS.add_force_special(body[ii], 'grav')
 
@@ -189,15 +189,15 @@ I = [1.,1.,1.]
 ##################################
 # cracy pendulum
 myMBS.add_marker('world_M1', 'world',0.,0.,-np.pi/4.,0.,0.) #np.pi/4.,np.pi/4.)
-myMBS.add_body_3d(b_n[0], 'world_M1', 1.0, I , 'angle-rod', parameters = [np.pi/4., 2.0])
+myMBS.add_body_3d(b_n[0], 'world_M1', 1.0, I , 'angle-rod', parameters = [-np.pi/4., 2.0])
 myMBS.add_force_special(b_n[0], 'grav')
 
 myMBS.add_marker(m_n[0], b_n[0], 0.,0.,0.)
-myMBS.add_body_3d(b_n[1], m_n[0], 1.0, I, 'angle-rod', parameters = [np.pi/4., 2.0])
+myMBS.add_body_3d(b_n[1], m_n[0], 1.0, I, 'angle-rod', parameters = [-np.pi/4., 2.0])
 myMBS.add_force_special(b_n[1], 'grav')
 
 myMBS.add_marker(m_n[1], b_n[1], 0.,0.,0.)
-myMBS.add_body_3d(b_n[2], m_n[1], 1.0, I, 'angle-rod', parameters = [np.pi/4., 2.0])
+myMBS.add_body_3d(b_n[2], m_n[1], 1.0, I, 'angle-rod', parameters = [-np.pi/4., 2.0])
 myMBS.add_force_special(b_n[2], 'grav')
 
 x0 = np.hstack(( 1. * np.ones(myMBS.dof), 1. * np.ones(myMBS.dof)))
@@ -244,10 +244,10 @@ def rotation_inp_diff_2(t):
 
 myMBS.add_parameter('phi', rotation_inp, rotation_inp_diff, rotation_inp_diff_2)
 myMBS.add_rotating_marker_para('rot_M0', 'world', 'phi', 0., 1.5, 0., 'Y')
-myMBS.add_body_3d('mount', 'rot_M0', 1.0, I , 'rod-zero', parameters = [1.0,'X']) #[np.pi/2., 2.0])
+myMBS.add_body_3d('mount', 'rot_M0', 1.0, I , 'rod-zero-X', parameters = [1.0]) #[np.pi/2., 2.0])
 myMBS.add_force_special('mount', 'grav')
 myMBS.add_marker('mount_M0', 'mount', 0.,0.,0.)
-myMBS.add_body_3d('pendulum', 'mount_M0', 1.0, I , 'rod-1-cardanic', parameters = [1.5,0.]) #[np.pi/2., 2.0])
+myMBS.add_body_3d('pendulum', 'mount_M0', 1.0, I , 'rod-1-cardanic', parameters = [-1.5,0.]) #[np.pi/2., 2.0])
 myMBS.add_force_special('pendulum', 'grav')
 
 x0 = np.hstack(( 0. * np.ones(myMBS.dof), 0. * np.zeros(myMBS.dof)))
@@ -374,7 +374,7 @@ A = symbols('A')
 myMBS.add_parameter_expr('phi', rotation_inp_expr(), {A: 0.05})
 myMBS.add_parameter('theta_lateral', lateral_inp, lateral_inp_diff, lateral_inp_diff_2)
 myMBS.add_rotating_marker_para('tire_carrier_M0', 'tire_carrier', 'phi', 0.,-0.2,0., 'Y')
-myMBS.add_body_3d('tire','tire_carrier_M0', 1.0, I_tire , 'revolute', parameters = ['Z'])
+myMBS.add_body_3d('tire','tire_carrier_M0', 1.0, I_tire , 'revolute-Z', parameters = [])
 #
 ####################################
 ## some tire forces
@@ -421,10 +421,11 @@ t_max = 30.
 myMBS.inte_grate_full(x0, t_max, dt, mode = 0, tolerance = 1e-0)
 
 assert(t_max == myMBS.time[-1])
-assert(np.allclose(np.array([ -5.26057927e-02,   3.51625112e+02,   7.27281000e-01,
-         1.52753420e+01,  -5.54307527e-01,  -1.08426628e+03,
-        -7.51480035e-04,   1.44813584e+01,   1.15400720e-05,
-         1.48052321e+00,  -1.05020070e-05,  -4.41122101e+01]),myMBS.x_t[-1]))
+assert(np.allclose(np.array([ -5.26060617e-02,   3.51673310e+02,   7.27282216e-01,
+         1.52751812e+01,  -5.54308645e-01,  -1.08441240e+03,
+        -7.51507586e-04,   1.44813582e+01,   4.71119749e-06,
+         1.48052717e+00,  -4.37590320e-06,  -4.41122111e+01]),myMBS.x_t[-1]))
+
 ################################################
 # test 8
 ################################################
@@ -452,7 +453,7 @@ def rotation_inp_diff_2(t):
 
 myMBS.add_parameter('phi', rotation_inp, rotation_inp_diff, rotation_inp_diff_2)
 myMBS.add_moving_marker_para('rot_M0', 'world', 'phi', 0., 0., 0., 'X')
-myMBS.add_body_3d('pendulum', 'rot_M0', 1.0, I , 'rod-1-cardanic', parameters = [1.5,0.]) #[np.pi/2., 2.0])
+myMBS.add_body_3d('pendulum', 'rot_M0', 1.0, I , 'rod-1-cardanic', parameters = [-1.5,0.]) #[np.pi/2., 2.0])
 myMBS.add_force_special('pendulum', 'grav')
 
 x0 = np.hstack(( 0. * np.ones(myMBS.dof), 0. * np.ones(myMBS.dof)))
@@ -492,14 +493,14 @@ myMBS.add_body_3d('rod_1', 'world_M1', 1.0, I , 'rod-1-cardanic', parameters = [
 myMBS.add_torque_3d('rod_1', 'bending-stiffness-1', parameters=[np.pi,800.])# [0.,0.,0.]])
 myMBS.add_force_special('rod_1', 'grav')
 myMBS.add_marker('rod_1_M0', 'rod_1', 0.,0.,0.)
-myMBS.add_body_3d('rod_2', 'rod_1_M0', 1.0, I, 'rod-1-cardanic', parameters = [1.0,np.pi/2.])
+myMBS.add_body_3d('rod_2', 'rod_1_M0', 1.0, I, 'rod-1-cardanic', parameters = [-1.0,np.pi/2.])
 myMBS.add_torque_3d('rod_2', 'bending-stiffness-1', parameters=[0.,800.])
 myMBS.add_force_special('rod_2', 'grav')
 myMBS.add_marker('rod_2_M0', 'rod_2', 0.,0.,0.)
-myMBS.add_body_3d('rod_3', 'rod_2_M0', 1.0, I, 'rod-zero', parameters = [2.0, 'Z'])
+myMBS.add_body_3d('rod_3', 'rod_2_M0', 1.0, I, 'rod-zero-Z', parameters = [2.0])
 myMBS.add_force_special('rod_3', 'grav')
 myMBS.add_marker('rod_3_M0', 'rod_3', 0.,0.,0.)
-myMBS.add_body_3d('rod_4', 'rod_3_M0', 1.0, I, 'rod-1-revolute', parameters = [0.5,0.,2.0])
+myMBS.add_body_3d('rod_4', 'rod_3_M0', 1.0, I, 'rod-1-revolute', parameters = [-0.5,0.,2.0])
 myMBS.add_force_special('rod_4', 'grav')
 myMBS.add_torque_3d('rod_4', 'rotation-stiffness-1', parameters = [100.])
 
@@ -537,10 +538,10 @@ I0 = [1.,1.,1.]
 ###################################
 myMBS.add_body_3d('B1', 'world_M0', 1.0, I0 , 'free-3-rotate', parameters = []) #[np.pi/2., 2.0])
 myMBS.add_marker('B1_M', 'B1', 0., 0., 0., 0., 0., 0.)
-myMBS.add_body_3d('B2', 'B1_M', 10.0, I0, 'rod-zero', parameters = [2.0, 'X'])
+myMBS.add_body_3d('B2', 'B1_M', 10.0, I0, 'rod-zero-X', parameters = [2.0])
 myMBS.add_marker('B2_M', 'B2', 0., 0., 0., 0., 0., 0.)
 myMBS.add_force_special('B2', 'grav')
-myMBS.add_body_3d('B3', 'B2_M', 1.0, I, 'revolute', parameters = ['X'])
+myMBS.add_body_3d('B3', 'B2_M', 1.0, I, 'revolute-X', parameters = [])
 x0 = np.hstack(( 0. * np.zeros(myMBS.dof), 0. * np.ones(myMBS.dof)))
 x0[7] = 100.
 #################################################
@@ -580,11 +581,11 @@ I = [0.,0.,0.]
 ######################################
 # large chain
 myMBS.add_marker('world_M1','world', 0.,0.,0., 0., 0.,0.)
-myMBS.add_body_3d(b_n[0],'world_M1', 1.0, I, 'rod-1-cardanic-efficient', parameters = [1.0,0.])
+myMBS.add_body_3d(b_n[0],'world_M1', 1.0, I, 'rod-1-cardanic-efficient', parameters = [-1.0,0.])
 myMBS.add_force_special(b_n[0], 'grav')
 for ii in range(0,b_n_max-1):
     myMBS.add_marker(m_n[ii],b_n[ii], 0.,0.,0.)
-    myMBS.add_body_3d(b_n[ii+1], m_n[ii], 1.0, I, 'rod-1-cardanic-efficient', parameters = [1.0,0.])
+    myMBS.add_body_3d(b_n[ii+1], m_n[ii], 1.0, I, 'rod-1-cardanic-efficient', parameters = [-1.0,0.])
     myMBS.add_force_special(b_n[ii+1], 'grav')
 x0 = np.hstack(( 0. * np.ones(myMBS.dof), 4. * np.ones(myMBS.dof)))
 for b in myMBS.bodies.keys():
@@ -629,7 +630,7 @@ if setup == 'two-dof':
 #
 elif setup == 'one-dof':
     myMBS.add_marker('world_M1','world', 0.,0.,0., 0., 0.,0.)
-    myMBS.add_body_3d('b1','world_M1', 1.0, I, 'rod-1-cardanic-efficient', parameters = [1,0,0.])
+    myMBS.add_body_3d('b1','world_M1', 1.0, I, 'rod-1-cardanic-efficient', parameters = [-1.0,0.])
     myMBS.add_force_special('b1', 'grav')
     x0 = np.hstack(( np.pi/2. * np.ones(myMBS.dof), 0. * np.ones(myMBS.dof)))
 else:

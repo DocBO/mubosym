@@ -38,7 +38,7 @@ myMBS.add_moving_marker_para('rot_M0', 'world', 'phi', 0., 0., 0., 'X')
 
 
 #myMBS.add_marker('mount_M0', 'mount', 0.,0.,0.)
-myMBS.add_body_3d('pendulum', 'rot_M0', 1.0, I , 'rod-1-cardanic', parameters = [1.5,0.]) #[np.pi/2., 2.0])
+myMBS.add_body_3d('pendulum', 'rot_M0', 1.0, I , 'rod-1-cardanic', parameters = [-1.5,0.]) #[np.pi/2., 2.0])
 myMBS.add_force_special('pendulum', 'grav')
 
 x0 = np.hstack(( 0. * np.ones(myMBS.dof), 0. * np.ones(myMBS.dof)))

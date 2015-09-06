@@ -78,7 +78,7 @@ myMBS.add_parameter_expr('phi', rotation_inp_expr(), {A: 0.05})
 
 myMBS.add_parameter('theta_lateral', lateral_inp, lateral_inp_diff, lateral_inp_diff_2)
 myMBS.add_rotating_marker_para('tire_carrier_M0', 'tire_carrier', 'phi', 0.,-0.2,0., 'Y')
-myMBS.add_body_3d('tire','tire_carrier_M0', 1.0, I_tire , 'revolute', parameters = ['Z'])
+myMBS.add_body_3d('tire','tire_carrier_M0', 1.0, I_tire , 'revolute-Z', parameters = [])
 #
 ####################################
 ## some tire forces
@@ -161,7 +161,7 @@ jac = myMBS.calc_lin_analysis_n(len(myMBS.x_t)-1)
 
 myMBS.prepare(mbs.DATA_PATH, save=True)
 myMBS.plotting(t_max, dt, plots='signals')
-myMBS.plotting(t_max, dt, plots='tire')
+#myMBS.plotting(t_max, dt, plots='tire')
 #x = myMBS.animate(t_max, dt, scale = 4, time_scale = 1.0, labels = True, t_ani = 30., center = 2)
 
 

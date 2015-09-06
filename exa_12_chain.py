@@ -18,7 +18,7 @@ import mubosym as mbs
 
 ###############################################################
 # general system setup example
-myMBS = mbs.MBSworld('chain', connect=True, force_db_setup=False)
+myMBS = mbs.MBSworld('chain', connect=False, force_db_setup=False)
 
 b_n = []
 m_n = []
@@ -29,20 +29,20 @@ for ii in range(b_n_max):
 
 
 #prepare a standard 
-I = [0.,0.,0.]
+I = [0.5,0.5,0.5]
 
 ######################################
 # large chain
 #myMBS.add_marker('world_M1','world', 0.,0.,0., np.pi/2.0, 0.,0.)
 myMBS.add_marker('world_M1','world', 0.,0.,0., 0., 0.,0.)
-myMBS.add_body_3d(b_n[0],'world_M1', 1.0, I, 'rod-1-cardanic-efficient', parameters = [1.0,0.])
+myMBS.add_body_3d(b_n[0],'world_M1', 1.0, I, 'rod-1-cardanic-efficient', parameters = [-1.0,0.])
 myMBS.add_force_special(b_n[0], 'grav')
 
 
 for ii in range(0,b_n_max-1):
     #myMBS.add_marker(m_n[ii],b_n[0], (float(ii)+0.5)/2.0,0.,0.)
     myMBS.add_marker(m_n[ii],b_n[ii], 0.,0.,0.)
-    myMBS.add_body_3d(b_n[ii+1], m_n[ii], 1.0, I, 'rod-1-cardanic-efficient', parameters = [1.0,0.])
+    myMBS.add_body_3d(b_n[ii+1], m_n[ii], 1.0, I, 'rod-1-cardanic-efficient', parameters = [-1.0,0.])
     myMBS.add_force_special(b_n[ii+1], 'grav')
 
 
@@ -70,8 +70,8 @@ mySyms = {'x':x,'y':y,'z':z}
 #equ2 = x - 7.0
 #myMBS.add_geometric_constaint(b_n[-1], equ2, 'world_M0', factor, mySyms)
 
-for b in myMBS.bodies.keys():
-    myMBS.add_damping(b,0.4)
+#for b in myMBS.bodies.keys():
+#    myMBS.add_damping(b,0.4)
     
 
 #################################################
@@ -103,7 +103,7 @@ jac = myMBS.calc_lin_analysis_n(len(myMBS.x_t)-1)
 
 
 myMBS.prepare(mbs.DATA_PATH, save = True)
-#myMBS.show_figures(t_max, dt)
-myMBS.animate(t_max, dt, scale = 4, time_scale = 1.0, t_ani = 20.0)
+myMBS.plotting(t_max, dt, plots='standard')
+#myMBS.animate(t_max, dt, scale = 4, time_scale = 1.0, t_ani = 20.0)
 
 #myMBS.linearize(x_op, a_op)#, quad = True)

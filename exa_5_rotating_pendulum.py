@@ -37,12 +37,12 @@ myMBS.add_rotating_marker_para('rot_M0', 'world', 'phi', 0., 1.5, 0., 'Y')
 #alternatively use of a steady rotating frame without extra parameter name, constant omega
 #myMBS.add_rotating_marker('rot_M0', 'world',0., 0., 0., 2.5, 'Y')
 
-myMBS.add_body_3d('mount', 'rot_M0', 1.0, I , 'rod-zero', parameters = [1.0,'X']) #[np.pi/2., 2.0])
+myMBS.add_body_3d('mount', 'rot_M0', 1.0, I , 'rod-zero-X', parameters = [1.0]) #[np.pi/2., 2.0])
 myMBS.add_force_special('mount', 'grav')
 
 
 myMBS.add_marker('mount_M0', 'mount', 0.,0.,0.)
-myMBS.add_body_3d('pendulum', 'mount_M0', 1.0, I , 'rod-1-cardanic', parameters = [1.5,0.]) #[np.pi/2., 2.0])
+myMBS.add_body_3d('pendulum', 'mount_M0', 1.0, I , 'rod-1-cardanic', parameters = [-1.5,0.]) #[np.pi/2., 2.0])
 myMBS.add_force_special('pendulum', 'grav')
 
 x0 = np.hstack(( 0. * np.ones(myMBS.dof), 0. * np.zeros(myMBS.dof)))

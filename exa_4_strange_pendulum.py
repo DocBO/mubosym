@@ -29,15 +29,15 @@ I = [1.,1.,1.]
 myMBS.add_marker('world_M1', 'world',0.,0.,-np.pi/4.,0.,0.) #np.pi/4.,np.pi/4.)
 #b_n[0] = myMBS.add_body_3d(999, 1, 1.0, I , 'rod-revolute', parameters = [0.,np.pi/2,2.0]) #[np.pi/2., 2.0])
 #b_n[0] = myMBS.add_body_3d(999, 1, 1.0, I , 'rod-2-cardanic', parameters = [2.0]) #[np.pi/2., 2.0])
-myMBS.add_body_3d(b_n[0], 'world_M1', 1.0, I , 'angle-rod', parameters = [np.pi/4., 2.0])
+myMBS.add_body_3d(b_n[0], 'world_M1', 1.0, I , 'angle-rod', parameters = [-np.pi/4., 2.0])
 myMBS.add_force_special(b_n[0], 'grav')
 
 myMBS.add_marker(m_n[0], b_n[0], 0.,0.,0.)
-myMBS.add_body_3d(b_n[1], m_n[0], 1.0, I, 'angle-rod', parameters = [np.pi/4., 2.0])
+myMBS.add_body_3d(b_n[1], m_n[0], 1.0, I, 'angle-rod', parameters = [-np.pi/4., 2.0])
 myMBS.add_force_special(b_n[1], 'grav')
 
 myMBS.add_marker(m_n[1], b_n[1], 0.,0.,0.)
-myMBS.add_body_3d(b_n[2], m_n[1], 1.0, I, 'angle-rod', parameters = [np.pi/4., 2.0])
+myMBS.add_body_3d(b_n[2], m_n[1], 1.0, I, 'angle-rod', parameters = [-np.pi/4., 2.0])
 myMBS.add_force_special(b_n[2], 'grav')
 
 #myMBS.add_marker(b_n[2], 0.,0.,0.)

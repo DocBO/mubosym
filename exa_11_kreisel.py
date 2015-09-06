@@ -28,10 +28,10 @@ I0 = [1.,1.,1.]
 
 myMBS.add_body_3d('B1', 'world_M0', 1.0, I0 , 'free-3-rotate', parameters = []) #[np.pi/2., 2.0])
 myMBS.add_marker('B1_M', 'B1', 0., 0., 0., 0., 0., 0.)
-myMBS.add_body_3d('B2', 'B1_M', 10.0, I0, 'rod-zero', parameters = [2.0, 'X'])
+myMBS.add_body_3d('B2', 'B1_M', 10.0, I0, 'rod-zero-X', parameters = [2.0])
 myMBS.add_marker('B2_M', 'B2', 0., 0., 0., 0., 0., 0.)
 myMBS.add_force_special('B2', 'grav')
-myMBS.add_body_3d('B3', 'B2_M', 1.0, I, 'revolute', parameters = ['X'])
+myMBS.add_body_3d('B3', 'B2_M', 1.0, I, 'revolute-X', parameters = [])
 x0 = np.hstack(( 0. * np.zeros(myMBS.dof), 0. * np.ones(myMBS.dof)))
 x0[7] = 100.
 
