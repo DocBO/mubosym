@@ -11,7 +11,7 @@ import mubosym as mbs
 
 ###############################################################
 # general system setup example
-myMBS = mbs.MBSworld('crank_slider', connect=True, force_db_setup=False)
+myMBS = mbs.MBSworld('crank_slider', connect=False, force_db_setup=False)
 
 
 #prepare a standard 
@@ -20,10 +20,11 @@ I = [0.,0.,0.]
 ######################################
 # some loop constraint
 myMBS.add_marker('world_M1','world', 0.,0.,0., 0., 0.,0.)
-myMBS.add_body_3d('b1','world_M1', 1.0, I, 'rod-1-cardanic-efficient', parameters = [1.0,0.])
+#myMBS.add_body_3d('b1','world_M1', 1.0, I, 'rod-1-cardanic-efficient', parameters = [1.0,0.])
+myMBS.add_body_3d('b1','world_M1', 1.0, I, 'rod-1-cardanic-efficient', parameters = [-1.0,0.])
 
 myMBS.add_marker('b1_M0','b1', 0.,0.,0.)
-myMBS.add_body_3d('b2', 'b1_M0', 1.0, I, 'rod-1-cardanic-efficient', parameters = [3.0,0.])
+myMBS.add_body_3d('b2', 'b1_M0', 1.0, I, 'rod-1-cardanic-efficient', parameters = [-3.0,0.])
 myMBS.add_force_special('b2', 'grav')
 
 ######################################

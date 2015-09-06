@@ -85,6 +85,7 @@ class MBSframe(ReferenceFrame):
         self.pos = 0.*IF.x
         self.vel = 0.*IF.x
         self.acc = 0.*IF.x
+        self.dicts = {}
     def set_pos_vec_IF(self, vec):
         self.pos = vec
         self.vel = vec.diff(t, IF)
@@ -115,28 +116,26 @@ class MBSframe(ReferenceFrame):
     def get_ez_IF(self):
         return self.z.express(IF)
     def px(self):
-        return self.pos.dot(IF.x)
+        return self.pos.dot(IF.x).subs(self.dicts)
     def py(self):
-        return self.pos.dot(IF.y)
+        return self.pos.dot(IF.y).subs(self.dicts)
     def pz(self):
-        return self.pos.dot(IF.z)
+        return self.pos.dot(IF.z).subs(self.dicts)
     def px_dt(self):
-        return self.vel.dot(IF.x)
+        return self.vel.dot(IF.x).subs(self.dicts)
     def py_dt(self):
-        return self.vel.dot(IF.y)
+        return self.vel.dot(IF.y).subs(self.dicts)
     def pz_dt(self):
-        return self.vel.dot(IF.z)
+        return self.vel.dot(IF.z).subs(self.dicts)
     def px_ddt(self):
-        return self.acc.dot(IF.x)
+        return self.acc.dot(IF.x).subs(self.dicts)
     def py_ddt(self):
-        return self.acc.dot(IF.y)
+        return self.acc.dot(IF.y).subs(self.dicts)
     def pz_ddt(self):
-        return self.acc.dot(IF.z)
+        return self.acc.dot(IF.z).subs(self.dicts)
     def set_dicts(self, dicts):
         for d in dicts:
-            self.pos = self.pos.subs(d)
-            self.vel = self.vel.subs(d)
-            self.acc = self.acc.subs(d)
+            self.dicts.update(d)
 
 class MBSbody(object):
     def __init__(self, n, name, mass, I, pos, vel, frame, joint, N_att, N_att_fixed, atm = ''):
@@ -188,9 +187,7 @@ class MBSbody(object):
     def get_mass(self):
         return self.mass
     def set_dicts(self, dicts):
-        for d in dicts:
-            self.pos = self.pos.subs(d)
-            self.vel = self.vel.subs(d)
+        self.frame.set_dicts(dicts)
             
 class MBScontrolSignal(object):
     def __init__(self, expr, name, unit):
@@ -218,6 +215,7 @@ class MBSmarker(object):
         self.name = name
         self.frame = frame
         self.body_name = body_name   #here the name is better
+        self.dicts = {}
     def get_frame(self):
         return self.frame
     def get_body_name(self):
@@ -245,10 +243,8 @@ class MBSmarker(object):
     ############
     # TODO: define psi, theta phi output 
     #
-    #def set_dicts(self, dicts):
-    #    for d in dicts:
-    #        self.pos = self.pos.subs(d)
-    #        self.vel = self.vel.subs(d)
+    def set_dicts(self, dicts):
+        self.frame.set_dicts(dicts)
 
 class MBSparameter(object):
     def __init__(self, name, sym, sym_dt, sym_ddt, func, func_dt, func_ddt, diff_dict, const = 0.):
@@ -276,6 +272,169 @@ class MBSmodel(object):
         self.ref = reference
     def add_signal(self, expr):
         self.ref.add_signal(expr)
+
+class MBSjoint(object):
+    def __init__(self, name):
+        self.name = name
+        self.x, self.y, self.z = symbols('x y z')
+        self.phi, self.theta, self.psi = symbols('phi theta psi')
+        self.rot_order = [self.phi, self.theta, self.psi]
+        self.trans = [self.x, self.y, self.z]
+        self.rot_frame = 0
+        self.trans_frame = 0
+        self.free_list = []
+        self.const_list = []
+        self.correspondence = {self.phi: 'X', self.theta: 'Y', self.psi: 'Z'}
+        self.c_string = 'XYZ'
+        self.n_free = 0
+    def define_rot_order(self, order):
+        self.rot_order = order
+        self.c_string = ''
+        for s in self.rot_order:
+            self.c_string += self.correspondence[s]
+    def define_freedoms(self, free_list):
+        self.free_list = free_list
+        self.n_free = len(free_list)
+    def define_constants(self, const_list):
+        self.const_list = const_list
+        
+##########################################################################
+# define useful joints here ...       
+joints = []
+
+joints.append(MBSjoint('rod-1-cardanic-efficient'))
+joints[-1].define_freedoms([joints[-1].psi])
+joints[-1].define_constants([joints[-1].y, joints[-1].theta])
+joints[-1].trans_frame = 1
+joints[-1].rot_frame = 0
+
+joints.append(MBSjoint('rod-1-cardanic'))
+joints[-1].define_freedoms([joints[-1].psi])
+joints[-1].define_constants([joints[-1].y, joints[-1].theta])
+joints[-1].trans_frame = 1
+joints[-1].rot_frame = 2
+
+joints.append(MBSjoint('x-axes'))
+joints[-1].define_freedoms([joints[-1].x])
+joints[-1].define_constants([])
+joints[-1].trans_frame = 1
+joints[-1].rot_frame = 2
+
+joints.append(MBSjoint('y-axes'))
+joints[-1].define_freedoms([joints[-1].y])
+joints[-1].define_constants([])
+joints[-1].trans_frame = 1
+joints[-1].rot_frame = 2
+
+joints.append(MBSjoint('z-axes'))
+joints[-1].define_freedoms([joints[-1].z])
+joints[-1].define_constants([])
+joints[-1].trans_frame = 1
+joints[-1].rot_frame = 2
+
+joints.append(MBSjoint('angle-rod'))
+joints[-1].define_freedoms([joints[-1].theta])
+joints[-1].define_constants([joints[-1].phi, joints[-1].y])
+joints[-1].define_rot_order([joints[-1].theta, joints[-1].phi, joints[-1].psi])
+joints[-1].trans_frame = 1
+joints[-1].rot_frame = 2
+
+joints.append(MBSjoint('rod-zero-X'))
+joints[-1].define_freedoms([])
+joints[-1].define_constants([joints[-1].x])
+joints[-1].trans_frame = 1
+joints[-1].rot_frame = 2
+
+joints.append(MBSjoint('rod-zero-Y'))
+joints[-1].define_freedoms([])
+joints[-1].define_constants([joints[-1].y])
+joints[-1].trans_frame = 1
+joints[-1].rot_frame = 2
+
+joints.append(MBSjoint('rod-zero-Z'))
+joints[-1].define_freedoms([])
+joints[-1].define_constants([joints[-1].z])
+joints[-1].trans_frame = 1
+joints[-1].rot_frame = 2
+
+joints.append(MBSjoint('rod-1-revolute'))
+joints[-1].define_freedoms([joints[-1].theta])
+joints[-1].define_rot_order([joints[-1].theta, joints[-1].phi, joints[-1].psi])
+joints[-1].define_constants([joints[-1].y])
+joints[-1].trans_frame = 1
+joints[-1].rot_frame = 2
+
+joints.append(MBSjoint('free-3-translate-z-rotate'))
+joints[-1].define_freedoms([joints[-1].theta, joints[-1].x, joints[-1].y, joints[-1].z])
+joints[-1].define_constants([])
+joints[-1].trans_frame = 0
+joints[-1].rot_frame = 2
+
+joints.append(MBSjoint('xz-plane'))
+joints[-1].define_freedoms([joints[-1].x, joints[-1].z])
+joints[-1].define_constants([])
+joints[-1].trans_frame = 0
+joints[-1].rot_frame = 0
+
+joints.append(MBSjoint('xy-plane'))
+joints[-1].define_freedoms([joints[-1].x, joints[-1].y])
+joints[-1].define_constants([])
+joints[-1].trans_frame = 0
+joints[-1].rot_frame = 0
+
+joints.append(MBSjoint('rod-2-cardanic'))
+joints[-1].define_freedoms([joints[-1].psi, joints[-1].theta])
+joints[-1].define_rot_order([joints[-1].psi, joints[-1].theta, joints[-1].phi])
+joints[-1].define_constants([joints[-1].y])
+joints[-1].trans_frame = 1
+joints[-1].rot_frame = 2
+
+joints.append(MBSjoint('rod-2-revolute-scharnier'))
+joints[-1].define_freedoms([joints[-1].theta, joints[-1].phi])
+joints[-1].define_rot_order([joints[-1].theta, joints[-1].phi, joints[-1].psi])
+joints[-1].define_constants([joints[-1].y])
+joints[-1].trans_frame = 1
+joints[-1].rot_frame = 2
+
+joints.append(MBSjoint('free-3-rotate'))
+joints[-1].define_freedoms([joints[-1].phi, joints[-1].theta, joints[-1].psi])
+joints[-1].define_constants([])
+joints[-1].trans_frame = 1
+joints[-1].rot_frame = 2
+
+joints.append(MBSjoint('free-3-translate'))
+joints[-1].define_freedoms([joints[-1].x, joints[-1].y, joints[-1].z])
+joints[-1].define_constants([])
+joints[-1].trans_frame = 0
+joints[-1].rot_frame = 2
+
+joints.append(MBSjoint('revolute-X'))
+joints[-1].define_freedoms([joints[-1].phi])
+joints[-1].define_constants([])
+joints[-1].trans_frame = 1
+joints[-1].rot_frame = 2
+
+joints.append(MBSjoint('revolute-Y'))
+joints[-1].define_freedoms([joints[-1].theta])
+joints[-1].define_constants([])
+joints[-1].trans_frame = 1
+joints[-1].rot_frame = 2
+
+joints.append(MBSjoint('revolute-Z'))
+joints[-1].define_freedoms([joints[-1].psi])
+joints[-1].define_constants([])
+joints[-1].trans_frame = 1
+joints[-1].rot_frame = 2
+
+joints.append(MBSjoint('free-6'))
+joints[-1].define_freedoms([joints[-1].phi, joints[-1].theta, joints[-1].psi, joints[-1].x, joints[-1].y, joints[-1].z])
+joints[-1].define_constants([])
+joints[-1].trans_frame = 0
+joints[-1].rot_frame = 0
+
+joints_names = [oo.name for oo in joints]
+def_joints = dict(zip(joints_names, joints))
+######################################################################
 
 class MBSio(object):
     """
@@ -715,27 +874,14 @@ class MBSworld(object):
             self.con_type.append(joint)
         else:
             self.con_type.append('transparent')
-        free0 = [ 'rod-zero' ]
-        free1 = [ 'rod-1-cardanic-efficient', 'axes', 'y-axes', 'x-axes', 'z-axes', 'angle-rod', 'revolute', 'rod-1-revolute', 'rod-1-cardanic']
-        free2 = [ 'rod-2-cardanic', 'rod-2-revolute-scharnier' , 'xy-plane', 'xz-plane', 'yx-plane', 'free-2-rotate']
-        free3 = [ 'spring-rod', 'free-3-rotate', 'rod-3-revolute-revolute', 'free-3-translate' ]
-        free4 = [ 'free-3-translate-z-rotate' ]
-        free6 = [ 'free-6' ]
+
         self.n_body += 1
         n_body = self.n_body  # number of the actual body (starts at 0)
         # create correct number of symbols for the next body
-        if joint in free0:
-            d_free = 0
-        elif joint in free1:
-            d_free = 1
-        elif joint in free2:
-            d_free = 2
-        elif joint in free3:
-            d_free = 3
-        elif joint in free4:
-            d_free = 4
-        elif joint in free6:
-            d_free = 6
+        if joint in def_joints:
+            jobj = def_joints[joint]
+            d_free = jobj.n_free
+            joint = 'general'
         else:
             raise InputError("no such joint name %s" % str(joint))
 
@@ -762,80 +908,39 @@ class MBSworld(object):
 
         #express the velocity and position in terms of the marker frame
         # not to forget the body fixed frame
-        if joint == 'x-axes':
-            t_frame = parameters[0]*IF.y
-            N_att.orient(IF, 'Axis', [0., IF.z] )
-            pos_pt = (self.q[n_body][0]*N_att.x).express(IF, variables = True)+t_frame
-        elif joint == 'angle-rod': # parameter[0] theta, parameter[1] length
-            N_fixed.orient(N_att_fixed, 'Body', [self.q[n_body][0],-parameters[0],0.], 'YXZ' )
-            N_att.orient(N_att_fixed, 'Body', [self.q[n_body][0],-parameters[0],0.], 'YXZ' )
-            pos_pt = (parameters[1]*N_att.y).express(IF, variables = True)+t_frame
-        elif joint == 'y-axes':
-            N_fixed.orient(N_att_fixed, 'Body', [0.,0.,0.], 'YXZ' )
-            N_att.orient(N_att_fixed, 'Body', [0.,0.,0.], 'YXZ' )
-            pos_pt = (self.q[n_body][0]*N_att.y).express(IF, variables = True)+t_frame
-        elif joint == 'xz-plane':
-            N_fixed.orient(IF, 'Axis', [0.,IF.z] )
-            N_att.orient(IF, 'Axis', [0., IF.z] )
-            pos_pt = (self.q[n_body][0]*N_att.x+self.q[n_body][1]*N_att.z).express(IF, variables = True)+t_frame
-        elif joint == 'xy-plane':
-            N_fixed.orient(IF, 'Axis', [0.,IF.z] )
-            N_att.orient(IF, 'Axis', [0., IF.z] )
-            pos_pt = (self.q[n_body][0]*N_att.x+self.q[n_body][1]*N_att.y).express(IF, variables = True)+t_frame
-        elif joint == 'free-3-translate-z-rotate':
-            N_fixed.orient(N_att_fixed, 'Body', [self.q[n_body][0],0.,0.], 'YXZ' )
-            N_att.orient(N_att_fixed, 'Body', [self.q[n_body][0],0.,0.], 'YXZ' )
-            pos_pt = (self.q[n_body][1]*IF.x + self.q[n_body][2]*IF.y + self.q[n_body][3]*IF.z).express(IF, variables = True)+t_frame
-        elif joint == 'free-3-translate':
-            N_fixed.orient(N_att_fixed, 'Axis', [0., IF.y] )
-            N_att.orient(N_att_fixed, 'Axis', [0., IF.y] ) #phi, r
-            pos_pt = (self.q[n_body][0]*IF.x + self.q[n_body][1]*IF.y + self.q[n_body][2]*IF.z).express(IF, variables = True)+t_frame
-        elif joint == 'free-6':
-            N_fixed.orient(IF, 'Body', [self.q[n_body][0],self.q[n_body][1],self.q[n_body][2]], 'XYZ' )
-            pos_pt = (self.q[n_body][3]*IF.x + self.q[n_body][4]*IF.y + self.q[n_body][5]*IF.z).express(IF, variables = True)+t_frame
-        elif joint == 'rod-1-cardanic-efficient':
-            N_fixed.orient(IF, 'Axis', [self.q[n_body][0], IF.z] )
-            N_att.orient(IF, 'Axis', [self.q[n_body][0], IF.z] ) #phi, r
-            #N_att.set_ang_vel(IF, self.u[n_body][0] * IF.z)
-            pos_pt = (-parameters[0]*N_att.y).express(IF, variables = True)+t_frame
-        #note there are 2 types of technical spherical movement: cardanic and revolute-scharnier
-        elif joint == 'rod-1-cardanic': # parameter[0]: length, parameters[1]: phi
-            N_fixed.orient(N_att_fixed, 'Body', [parameters[1],self.q[n_body][0],0.], 'YZX' )
-            N_att.orient(N_att_fixed, 'Body', [parameters[1],self.q[n_body][0],0.], 'YZX' )
-            pos_pt = (-parameters[0]*N_att.y).express(IF, variables = True)+t_frame
-        elif joint == 'rod-2-cardanic': # parameter[0]: length
-            N_fixed.orient(N_att_fixed, 'Body', [self.q[n_body][0],self.q[n_body][1],0.], 'ZXY' )
-            N_att.orient(N_att_fixed, 'Body', [self.q[n_body][0],self.q[n_body][1],0.], 'ZXY' )
-            pos_pt = (-parameters[0]*N_att.y).express(IF, variables = True)+t_frame
-        elif joint == 'rod-2-revolute-scharnier': # parameter[0]: length
-            N_fixed.orient(N_att_fixed, 'Body', [self.q[n_body][0],self.q[n_body][1],0.], 'YXZ' )
-            N_att.orient(N_att_fixed, 'Body', [self.q[n_body][0],self.q[n_body][1],0.], 'YXZ' )
-            pos_pt = (-parameters[0]*N_att.y).express(IF, variables = True)+t_frame
-        elif joint == 'free-3-rotate': # now working (not for bending stiffness)
-            N_fixed.orient(IF, 'Body', [self.q[n_body][0],self.q[n_body][1],self.q[n_body][2]], 'XYZ' )
-            pos_pt = t_frame
-        elif joint == 'rod-1-revolute':# parameter[0]: length
-            N_fixed.orient(N_att_fixed, 'Body', [self.q[n_body][0],0.,0.], 'YXZ' )
-            N_att.orient(N_att_fixed, 'Body', [self.q[n_body][0],0.,0.], 'YXZ' )
-            pos_pt = (-parameters[0]*N_att.y).express(IF, variables = True)+t_frame
-        elif joint == 'revolute': # parameter[0]: 'X' or 'Y' or 'Z'
-            if parameters[0] == 'X':
-                orient = 'XYZ'
-            elif parameters[0] == 'Y':
-                orient = 'YXZ'
-            elif parameters[0] == 'Z':
-                orient = 'ZXY'
-            N_fixed.orient(N_att_fixed, 'Body', [self.q[n_body][0],0.,0.], orient )
-            N_att.orient(N_att_fixed, 'Body', [self.q[n_body][0],0.,0.], orient )
-            pos_pt = t_frame
-        elif joint == 'rod-zero':# parameter[0]: length, parameter[1]: direction
-            N_fixed.orient(N_att_fixed, 'Body', [0.,0.,0.], 'XYZ')
-            if parameters[1] == 'X':
-                pos_pt = (parameters[0]*N_fixed.x).express(IF, variables = True)+t_frame
-            elif parameters[1] == 'Y':
-                pos_pt = (parameters[0]*N_fixed.y).express(IF, variables = True)+t_frame
-            else:
-                pos_pt = (parameters[0]*N_fixed.z).express(IF, variables = True)+t_frame
+#        if joint == 'rod-2-cardanic-old': # parameter[0]: length
+#            N_fixed.orient(N_att_fixed, 'Body', [self.q[n_body][0],self.q[n_body][1],0.], 'ZXY' )
+#            N_att.orient(N_att_fixed, 'Body', [self.q[n_body][0],self.q[n_body][1],0.], 'ZXY' )
+#            pos_pt = (-parameters[0]*N_att.y).express(IF, variables = True)+t_frame
+#        elif joint == 'rod-2-revolute-scharnier-old': # parameter[0]: length
+#            N_fixed.orient(N_att_fixed, 'Body', [self.q[n_body][0],self.q[n_body][1],0.], 'YXZ' )
+#            N_att.orient(N_att_fixed, 'Body', [self.q[n_body][0],self.q[n_body][1],0.], 'YXZ' )
+#            pos_pt = (-parameters[0]*N_att.y).express(IF, variables = True)+t_frame
+        if joint == 'general':
+            frames = {0:IF, 1:N_att, 2:N_att_fixed}
+            print("General frames: ", IF, N_att, N_att_fixed)
+            q_list = self.q[n_body]
+            rot_order = []
+            free_dict = dict(zip(jobj.free_list, q_list))
+            joint_parameters = dict(zip(jobj.const_list, parameters))
+            for s in jobj.rot_order:
+                if s in jobj.free_list:
+                    rot_order.append(free_dict[s])
+                elif s in jobj.const_list:
+                    rot_order.append(joint_parameters[s])
+                else:
+                    rot_order.append(0.)
+            print("General rot: ", frames[jobj.rot_frame], rot_order, jobj.c_string)
+            N_fixed.orient(frames[jobj.rot_frame], 'Body', rot_order, jobj.c_string)
+            N_att.orient(frames[jobj.rot_frame], 'Body', rot_order, jobj.c_string)
+            trans = jobj.x*frames[jobj.trans_frame].x + jobj.y*frames[jobj.trans_frame].y + jobj.z*frames[jobj.trans_frame].z
+            trans = trans.subs(joint_parameters)
+            trans = trans.subs(free_dict)
+            for s in jobj.trans:
+                if not s in jobj.free_list:
+                    trans = trans.subs({s:0.})
+            print ("General trans: ",trans)
+            pos_pt = trans.express(IF, variables = True)+t_frame
         else:
             # we will never get here because we already checked for comleteness
             # by looking in the containers of free0 - free6, but we never know, so again...
@@ -843,16 +948,18 @@ class MBSworld(object):
 
         vel_pt = pos_pt.diff(t, IF)
         # here we update the joint name to the body
-        self.bodies_obj.update({new_body_name:MBSbody(n_body,new_body_name, mass, I, pos_pt, vel_pt, N_fixed, joint, N_att, N_att_fixed, str_n_marker) })
+        if joint == 'general':
+            joint_name = jobj.name
+        else:
+            joint_name = joint
+        self.bodies_obj.update({new_body_name:MBSbody(n_body,new_body_name, mass, I, pos_pt, vel_pt, N_fixed, joint_name, N_att, N_att_fixed, str_n_marker) })
         print( "body no:", n_body )
-        print( "body has joint:", joint )
+        print( "body has joint:", joint_name )
         print( "body pos:", pos_pt )
         print( "body vel:", vel_pt )
 
         #TODO check the coefficients and delete all small ones
 
-        #Pt.set_pos(O, pos_pt)              # Set the position of Pt
-        #Pt.set_vel(IF, vel_pt)             # Set the velocity of Pt
         N_fixed.set_pos_vec_IF(pos_pt)
 
         Ixx = self.Ixx[n_body]*outer(N_fixed.x, N_fixed.x)
@@ -936,7 +1043,7 @@ class MBSworld(object):
             self.pot_energy_saver.append(0.5*parameters[0]*self.q[n][0]**2)
         if force_type == 'grav':
             force = -g*self.m[n]*IF.y
-            self.pot_energy_saver.append(g*self.m[n]*self.get_pt_pos(n,IF,1))
+            self.pot_energy_saver.append(g*self.m[n]*body.y()) # old: self.get_pt_pos(n,IF,1))
         if force_type == 'spring-rod':
             if len(parameters) < 2:
                 raise ParameterError(parameters, 2, "spring-rod")
@@ -970,9 +1077,7 @@ class MBSworld(object):
     def add_torque_3d(self, str_m_b, torque_type, parameters = []):
         global IF, O, g, t
         n, N_fixed_n, _, body = self._interpretation_of_str_m_b(str_m_b)
-
         N_fixed_m = body.get_N_att_fixed()  #self.body_frames[m]
-
 
         if torque_type == 'bending-stiffness-1':
             print( 'stiffness' )
@@ -1023,10 +1128,27 @@ class MBSworld(object):
             raise InputError("no such parameter name %s" % str(para_name))
         n, N_fixed_n, _, body = self._interpretation_of_str_m_b(str_m_b)
         m, N_fixed_m, _, _ = self._interpretation_of_str_m_b(str_m_b_ref)
+        n_vec = ( v[0] * N_fixed_m.x + v[1] * N_fixed_m.y + v[2] * N_fixed_m.z )
+        self.torques.append((N_fixed_n, n_vec*phi/sqrt(v[0]*v[0]+v[1]*v[1]+v[2]*v[2]) ))
+        
+    def add_parameter_force(self, str_m_b, str_m_b_ref, v, para_name):
+        """
+        Add an external force to a body in the direction v, the abs value is equal the value of the parameter (para_name)
 
+        :param str_m_b: a body name or a marker name
+        :param str_m_b_ref: a body name or a marker name as a reference where vel and omega is transmitted to the model and in which expressed the force and torque is acting
+        :param v: direction of the force (not normalized)
+        :param para_name: name of the parameter
+        """
+        global IF, O, g, t
+        try:
+            phi = [x.sym for x in self.param_obj if x.name == para_name][0]
+        except:
+            raise InputError("no such parameter name %s" % str(para_name))
+        n, N_fixed_n, _, body = self._interpretation_of_str_m_b(str_m_b)
+        m, N_fixed_m, _, _ = self._interpretation_of_str_m_b(str_m_b_ref)
         n_vec = v[0] * N_fixed_m.x + v[1] * N_fixed_m.y + v[2] * N_fixed_m.z
-        #print "TT1: ",n_vec*phi
-        self.torques.append((N_fixed_n, n_vec*phi))
+        self.forces.append((N_fixed_n, n_vec*phi/sqrt(v[0]*v[0]+v[1]*v[1]+v[2]*v[2]) ))
 
     def add_one_body_force_model(self, model_name, str_m_b, str_m_b_ref, typ='tire', parameters = []):
         """
@@ -1041,7 +1163,6 @@ class MBSworld(object):
         global IF, O, g, t
         F = []
         T = []
-
         self.forces_models_n += 1
         n, N_fixed_n, _, body = self._interpretation_of_str_m_b(str_m_b)
         m, N_fixed_m, _, _ = self._interpretation_of_str_m_b(str_m_b_ref)
@@ -1277,40 +1398,6 @@ class MBSworld(object):
         damp = -gamma * body.get_vel()
         self.forces.append((Pt, damp))
 
-    def get_pt_pos(self, n, frame, coord):
-        '''
-        coord is 0..2
-        '''
-        global IF, O, g, t
-        Pt = self.body_frames[n].get_pos_Pt()
-        if coord == 0:
-            v = frame.x
-        elif coord == 1:
-            v = frame.y
-        elif coord == 2:
-            v = frame.z
-        return (Pt.pos_from(O).express(frame, variables = True).dot(v)) #.simplify()
-
-    def get_pt_vel(self, n, frame, coord):
-        '''
-        coord is 0..2 (x,y,z-direction)
-        '''
-        s_coord = self.get_pt_pos(n, frame, coord)
-        return s_coord.diff(t).subs(self.kindiff_dict)
-
-
-    def get_pt_acc(self, n, frame, coord):
-        v_coord = self.get_pt_vel(n, frame, coord)
-        return v_coord.diff(t).subs(self.kindiff_dict).subs(self.accdiff_dict)
-
-    def get_pt_acc_IF(self, n):
-        global IF, O, g, t
-        v_coord_0 = self.get_pt_vel(n, IF, 0)
-        v_coord_1 = self.get_pt_vel(n, IF, 1)
-        v_coord_2 = self.get_pt_vel(n, IF, 2)
-        return v_coord_0.diff(t)*IF.x + v_coord_1.diff(t)*IF.y + v_coord_2.diff(t)*IF.z
-
-
     def get_omega(self, n, frame, coord):
         '''
         coord is 0..2 (x,y,z-direction)
@@ -1324,39 +1411,31 @@ class MBSworld(object):
             v = frame.z
         omega_c = omega.express(frame, variables = True).dot(v)
         return omega_c.subs(self.kindiff_dict)
-
-#    def subs_kindiff(self):
-#        try:
-#            self.d_c1=self.d_c1.subs(self.kindiff_dict)
-#            self.d_c2=self.d_c2.subs(self.kindiff_dict)
-#        except:
-#            pass
-
-    def correct_the_initial_state(self, m, x0):
-        global IF, O, g, t
-        #correct the initial state vector, dynamic var number m
-        #TODO make it more general
-        dynamic = self.q_flat + self.u_flat
-        x00 = dict(zip(dynamic, x0))
-        self.x00 = x00
-        x,y = symbols('x y')
-        if len(self.q[m]) == 1:
-            x00[self.q[m][0]] = x
-            equ = (self.d_c1.subs(self.const_dict)).subs(x00)
-            x0[m] = sp_solve(equ)[0]
-            x00 = dict(zip(dynamic, x0))
-            m2 = m+self.dof
-            x00[self.u[m][0]] = x
-            equ = (self.d_c2.subs(self.const_dict)).subs(x00)
-            x0[m2] = sp_solve(equ)[0]
-        else:
-            x00[self.q[m][0]] = 0.5
-            x00[self.q[m][1]] = y
-            self.equ_a = (self.d_c1.subs(self.const_dict)).subs(x00)
-            x0[m] = 0.5
-            x0[m+1] = sp_solve(self.equ_a,y)[0]
-
-        return x0
+#
+#    def correct_the_initial_state(self, m, x0):
+#        global IF, O, g, t
+#        #correct the initial state vector, dynamic var number m
+#        #TODO make it more general
+#        dynamic = self.q_flat + self.u_flat
+#        x00 = dict(zip(dynamic, x0))
+#        self.x00 = x00
+#        x,y = symbols('x y')
+#        if len(self.q[m]) == 1:
+#            x00[self.q[m][0]] = x
+#            equ = (self.d_c1.subs(self.const_dict)).subs(x00)
+#            x0[m] = sp_solve(equ)[0]
+#            x00 = dict(zip(dynamic, x0))
+#            m2 = m+self.dof
+#            x00[self.u[m][0]] = x
+#            equ = (self.d_c2.subs(self.const_dict)).subs(x00)
+#            x0[m2] = sp_solve(equ)[0]
+#        else:
+#            x00[self.q[m][0]] = 0.5
+#            x00[self.q[m][1]] = y
+#            self.equ_a = (self.d_c1.subs(self.const_dict)).subs(x00)
+#            x0[m] = 0.5
+#            x0[m+1] = sp_solve(self.equ_a,y)[0]
+#        return x0
 
     def set_const_dict(self, const_dict):
         self.const_dict = const_dict
@@ -1466,7 +1545,6 @@ class MBSworld(object):
 
 
         if self.connect and not self.db_setup:
-            print(self.db_setup)
             print( "from the db ..." )
             wd = worldData()
             wd.put_str(self.mydb.get(self.name)[1])
@@ -1544,16 +1622,13 @@ class MBSworld(object):
         toc = time.clock()
         #######################################################
         # set all dicts to all frames
-        # d = [self.kindiff_dict, self.accdiff_dict, self.const_dict]
-#        for oo in self.bodies_obj.values():
-#            oo.set_dicts(d)
-#            oo.get_frame().set_dicts(d)
-#        for oo in self.marker_obj.values():
-#            #oo.set_dicts(d)
-#            oo.get_frame().set_dicts(d)
-#        for oo in self.marker_fixed_obj.values():
-#            #oo.set_dicts(d)
-#            oo.get_frame().set_dicts(d)
+        d = [self.kindiff_dict, self.accdiff_dict, self.const_dict]
+        for oo in self.bodies_obj.values():
+            oo.set_dicts(d)
+        for oo in self.marker_obj.values():
+            oo.set_dicts(d)
+        for oo in self.marker_fixed_obj.values():
+            oo.set_dicts(d)
 
         print( "finished ... ", toc-tic )
 
@@ -1678,32 +1753,32 @@ class MBSworld(object):
             for ii in range(self.dof):
                 acc_line = hstack((acc_line,(u[ti][ii]-u[ti-1][ii])/(t[ti]-t[ti-1])))
             self.acc = vstack((self.acc, acc_line))
-
-    def res_rod_forces(self):
-        self.f_rod = []
-        for oo in self.body_list_sorted:
-            N_fixed_n = oo.get_frame()
-            Pt_n = oo.Pt()
-            ay = self.get_pt_acc(ii,N_fixed_n,1).subs(self.const_dict)
-            f_ex_constr = 0.
-            for jj in self.forces:
-                if jj[0] == Pt_n:
-                    #print type(f_ex_constr)
-                    f_ex_constr += jj[1].dot(N_fixed_n.y) #here assumed that the rod is in y-direction
-            self.f_rod.append(oo.get_mass()*ay-f_ex_constr)
-            #print "f_rod: ",self.f_rod[ii]
-        self.rod_f_lambda = lambdify(self.q_flat+self.u_flat+self.a_flat, self.f_rod)
+            
+     #TODO : new setup of rod forces
+#    def res_rod_forces(self):
+#        self.f_rod = []
+#        for oo in self.body_list_sorted:
+#            N_fixed_n = oo.get_frame()
+#            Pt_n = oo.Pt()
+#            ay = self.get_pt_acc(ii,N_fixed_n,1).subs(self.const_dict)
+#            f_ex_constr = 0.
+#            for jj in self.forces:
+#                if jj[0] == Pt_n:
+#                    #print type(f_ex_constr)
+#                    f_ex_constr += jj[1].dot(N_fixed_n.y) #here assumed that the rod is in y-direction
+#            self.f_rod.append(oo.get_mass()*ay-f_ex_constr)
+#            #print "f_rod: ",self.f_rod[ii]
+#        self.rod_f_lambda = lambdify(self.q_flat+self.u_flat+self.a_flat, self.f_rod)
 
     def res_total_force(self, oo):
         global IF, O, g, t
         res_force = []
-        res_force.append( oo.x().subs(self.const_dict) )
-        res_force.append( oo.y().subs(self.const_dict) )
-        res_force.append( oo.z().subs(self.const_dict) )
-        n = oo.get_n()
-        res_force.append(self.get_pt_acc(n,IF,0).subs(self.const_dict)*self.m[n])
-        res_force.append(self.get_pt_acc(n,IF,1).subs(self.const_dict)*self.m[n])
-        res_force.append(self.get_pt_acc(n,IF,2).subs(self.const_dict)*self.m[n])
+        res_force.append( oo.x() )
+        res_force.append( oo.y() )
+        res_force.append( oo.z() )
+        res_force.append(oo.x_ddt()*oo.mass )
+        res_force.append(oo.y_ddt()*oo.mass )
+        res_force.append(oo.z_ddt()*oo.mass )
 
         f_t = [t] + self.parameters
         return lambdify(self.q_flat+self.u_flat+self.a_flat+f_t, res_force)
@@ -1781,10 +1856,7 @@ class MBSworld(object):
 
         for str_m_b in moving_frames_in_graphics:
             n, N_fixed_n, is_body, oo = self._interpretation_of_str_m_b(str_m_b)
-            if is_body:
-                self.vis_frame_coords.append(self.res_fixed_body_frames(oo))
-            else:
-                self.vis_frame_coords.append(self.res_fixed_marker_frames(oo))
+            self.vis_frame_coords.append(self.res_fixed_body_frames(oo))
 
         for str_m_b in fixed_frames_in_graphics:
             n, N_fixed_n, is_body, body = self._interpretation_of_str_m_b(str_m_b)

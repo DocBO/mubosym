@@ -9,7 +9,7 @@ import numpy as np
 from sympy import symbols, sin
 
 import mubosym as mbs
-
+from interp1d_interface import interp
 ###############################################################
 # general system setup example
 myMBS = mbs.MBSworld('simple_car_sequ', connect=True, force_db_setup=False)
@@ -22,7 +22,7 @@ I_car = [500.,3000.,1500.]
 I_0 = [0.,0.,0.] 
 I_tire = [1.,1.,1.]
 
-k = mbs.interp1d_interface.interp(filename = mbs.DATA_PATH+"/vel_01.dat")
+k = interp(filename = mbs.DATA_PATH+"/vel_01.dat")
 #high end definition of static variables...
 @mbs.static_vars(t_p=0, diff_p=0)
 def lateral_inp(t): 
@@ -46,7 +46,7 @@ def axes_front(axes_marker, n):
     myMBS.add_force_special('carrier_f'+str(n), 'spring-damper-axes', parameters = [20000., -1.0, 800.])
     myMBS.add_force_special('carrier_f'+str(n), 'grav')
     myMBS.add_rotating_marker_para('carrier_M_f'+str(n), 'carrier_f'+str(n), 'phi', 0.,-0.20,0.0, 'Y')
-    myMBS.add_body_3d('tire_f'+str(n), 'carrier_M_f'+str(n), 1.0, I_tire , 'revolute', parameters = ['Z'])
+    myMBS.add_body_3d('tire_f'+str(n), 'carrier_M_f'+str(n), 1.0, I_tire , 'revolute-Z', parameters = [])
     myMBS.add_one_body_force_model('tiremodel_'+str(n), 'tire_f'+str(n),'carrier_M_f'+str(n),'tire')
     
 def axes_rear(axes_marker, n):
@@ -54,7 +54,7 @@ def axes_rear(axes_marker, n):
     myMBS.add_force_special('carrier_r'+str(n), 'spring-damper-axes', parameters = [20000., -1.0, 800.])
     myMBS.add_force_special('carrier_r'+str(n), 'grav')
     myMBS.add_marker('carrier_M_r'+str(n), 'carrier_r'+str(n) , 0.,-0.20,0.0)
-    myMBS.add_body_3d('tire_r'+str(n), 'carrier_M_r'+str(n), 1.0, I_tire , 'revolute', parameters = ['Z'])
+    myMBS.add_body_3d('tire_r'+str(n), 'carrier_M_r'+str(n), 1.0, I_tire , 'revolute-Z', parameters = [])
     myMBS.add_one_body_force_model('tiremodel_'+str(n), 'tire_r'+str(n),'carrier_M_r'+str(n),'tire')
     
 # a simple car using sequence buildup
@@ -129,8 +129,8 @@ myMBS.add_control_signal(vel_1)
 
 
 #to settle car ...
-#for b in myMBS.bodies.keys():
-#    myMBS.add_damping(b, 10.0)
+for b in myMBS.bodies.keys():
+    myMBS.add_damping(b, 10.0)
 
 myMBS.kaneify(simplify=False)
 
@@ -169,6 +169,6 @@ jac = myMBS.calc_lin_analysis_n(len(myMBS.x_t)-1)
 
 inp = raw_input("Weiter zur Animation (return)...")
 
-myMBS.prepare(mbs.DATA_PATH, save=True)
+myMBS.prepare(mbs.DATA_PATH, save=False)
 #myMBS.plotting(t_max, dt, plots='tire')
 a = myMBS.animate(t_max, dt, scale = 4, time_scale = 1, t_ani = 35., labels = True, center = 0)

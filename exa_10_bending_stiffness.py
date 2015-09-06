@@ -22,19 +22,19 @@ myMBS.add_torque_3d('rod_1', 'bending-stiffness-1', parameters=[np.pi,800.])# [0
 myMBS.add_force_special('rod_1', 'grav')
 myMBS.add_marker('rod_1_M0', 'rod_1', 0.,0.,0.)
 
-myMBS.add_body_3d('rod_2', 'rod_1_M0', 1.0, I, 'rod-1-cardanic', parameters = [1.0,np.pi/2.])
+myMBS.add_body_3d('rod_2', 'rod_1_M0', 1.0, I, 'rod-1-cardanic', parameters = [-1.0,np.pi/2.])
 myMBS.add_torque_3d('rod_2', 'bending-stiffness-1', parameters=[0.,800.])
 myMBS.add_force_special('rod_2', 'grav')
 myMBS.add_marker('rod_2_M0', 'rod_2', 0.,0.,0.)
 #
 
-myMBS.add_body_3d('rod_3', 'rod_2_M0', 1.0, I, 'rod-zero', parameters = [2.0, 'Z'])
+myMBS.add_body_3d('rod_3', 'rod_2_M0', 1.0, I, 'rod-zero-Z', parameters = [2.0])
 myMBS.add_force_special('rod_3', 'grav')
 
 myMBS.add_marker('rod_3_M0', 'rod_3', 0.,0.,0.)
 #
 #
-myMBS.add_body_3d('rod_4', 'rod_3_M0', 1.0, I, 'rod-1-revolute', parameters = [0.5,0.,2.0])
+myMBS.add_body_3d('rod_4', 'rod_3_M0', 1.0, I, 'rod-1-revolute', parameters = [-0.5,0.,2.0])
 myMBS.add_force_special('rod_4', 'grav')
 myMBS.add_torque_3d('rod_4', 'rotation-stiffness-1', parameters = [100.])
 

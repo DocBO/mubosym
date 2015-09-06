@@ -11,7 +11,7 @@ import mubosym as mbs
 
 ###############################################################
 # general system setup example
-myMBS = mbs.MBSworld('reflective_wall', connect=True, force_db_setup=False)
+myMBS = mbs.MBSworld('reflective_wall', connect=False, force_db_setup=False)
 #myMBS1 = MBS()
 
 body = ["A", "B", "C"]
@@ -32,7 +32,7 @@ myMBS.add_force(body[0],'world_M0', parameters = [100.,0.,0.])
 myMBS.add_marker(marker[0], body[0], 0.,0.,0.)
 
 for ii in range(len(body))[1:]:
-    myMBS.add_body_3d(body[ii], marker[ii-1], 1.0, I, 'rod-1-cardanic', parameters = [1.5,0.])
+    myMBS.add_body_3d(body[ii], marker[ii-1], 1.0, I, 'rod-1-cardanic', parameters = [-1.5,0.])
     myMBS.add_marker(marker[ii], body[ii],  0.,0.,0.)
     myMBS.add_force_special(body[ii], 'grav')
     
