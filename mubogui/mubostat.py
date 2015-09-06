@@ -30,6 +30,95 @@ else:
 print( "using pyqtgraph:", pg.__version__ )
 
 
+
+
+
+
+#def plotting(self, t_max, dt, plots = 'standard'):
+#            #plotting
+#    if plots == 'standard':
+#        n = len(self.q_flat)
+#        n_max = int(t_max/dt)-2
+#        plt.subplot(2, 1, 1)
+#        lines = plt.plot(self.time[0:n_max], self.x_t[0:n_max, :n])
+#        lab = plt.xlabel('Time [sec]')
+#        leg = plt.legend(self.dynamic[:n])
+#
+#        plt.subplot(2, 1, 2)
+#        lines = plt.plot(self.time, self.e_kin,self.time,self.e_rot,self.time, self.e_pot,self.time, self.e_tot)
+#        lab = plt.xlabel('Time [sec]')
+#        leg = plt.legend(['E_kin','E_rot', 'E_pot', 'E_full'])
+#        plt.show()
+#        #
+#    elif plots == 'y-pos':
+#        n = len(self.q_flat)
+#        n_max = int(t_max/dt)-2
+#        plt.subplot(2, 1, 1)
+#        lines = plt.plot(self.time[0:n_max], self.state[0:n_max, 4])
+#        lab = plt.xlabel('Time [sec]')
+#        leg = plt.legend(["y-Pos."])
+#
+#        plt.subplot(2, 1, 2)
+#        lines = plt.plot(self.time, self.e_kin,self.time,self.e_rot,self.time, self.e_pot,self.time, self.e_tot)
+#        lab = plt.xlabel('Time [sec]')
+#        leg = plt.legend(['E_kin','E_rot', 'E_pot', 'E_full'])
+#        plt.show()
+#
+#    elif plots == 'tire':
+#
+#        plt.subplot(5, 1, 1)
+#        lines = plt.plot(self.time, array(self.model_signals_results[0])[:,0], self.time, array(self.model_signals_results[0])[:,2])
+#        #lab = plt.xlabel('Time [sec]')
+#        leg1 = plt.legend(['Fx [N]', 'Fz [N]'])
+#
+#        plt.subplot(5, 1, 2)
+#        lines = plt.plot(self.time, array(self.model_signals_results[0])[:,1])
+#        #lab = plt.xlabel('Time [sec]')
+#        leg1 = plt.legend(['Fy [N]'])
+#
+#        plt.subplot(5, 1, 3)
+#        lines = plt.plot( self.time, array(self.model_signals_results[0])[:,3])
+#        #lab = plt.xlabel('Time [sec]')
+#        leg2 = plt.legend(['Tz [Nm]'])
+#
+#        plt.subplot(5, 1, 4)
+#        lines = plt.plot( self.time, array(self.model_signals_results[0])[:,4])
+#        lab = plt.xlabel('Time [sec]')
+#        leg3 = plt.legend(['Slip [%]'])
+#
+#        plt.subplot(5, 1, 5)
+#        lines = plt.plot( self.time, array(self.model_signals_results[0])[:,5])
+#        lab = plt.xlabel('Time [sec]')
+#        leg4 = plt.legend(['Alpha [grad]'])
+#        plt.show()
+#
+#    elif plots == 'signals':
+#        n_signals = len(self.control_signals_obj)
+#        for n in range(n_signals):
+#            plt.subplot(n_signals, 1, n+1)
+#            lines = plt.plot(self.time, array(self.control_signals_results)[:,n])
+#            leg = plt.legend(['Signal '+str(n)])
+#            lab = plt.xlabel(self.control_signals_obj[n].name+" in "+self.control_signals_obj[n].unit)
+#        plt.show()  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class mbWidget(QtGui.QWidget):
     """
     Define a top-level widget to hold everything
