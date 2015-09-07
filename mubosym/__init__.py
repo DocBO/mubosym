@@ -15,7 +15,8 @@ sys.path.append(LOCAL_PATH)
 sys.path.append(DATA_PATH)
 
 
-from mubosym_core import MBSworld, def_joints
+
+from mubosym_core import MBSworld
 
 def static_vars(**kwargs):
     def decorate(func):

@@ -23,7 +23,8 @@ from sympy.solvers import solve as sp_solve
 
 #Vector.simp = True
 
-from numpy import array, hstack, vstack, ones, zeros, linspace, pi, sqrt
+from numpy import array, hstack, vstack, ones, zeros, linspace, pi
+from numpy import sqrt as np_sqrt
 from numpy.linalg import eig
 from numpy.linalg import solve as np_solve
 from scipy.linalg import solve as sc_solve #, lu_solve
@@ -31,6 +32,7 @@ from scipy.linalg import solve as sc_solve #, lu_solve
 from scipy.integrate import ode, odeint
 
 import mubosym as mbs
+import mubojoints as joints
 
 from matplotlib import pyplot as plt
 #########################################
@@ -308,167 +310,7 @@ class MBSmodel(object):
     def add_signal(self, expr):
         self.ref.add_signal(expr)
 
-class MBSjoint(object):
-    def __init__(self, name):
-        self.name = name
-        self.x, self.y, self.z = symbols('x y z')
-        self.phi, self.theta, self.psi = symbols('phi theta psi')
-        self.rot_order = [self.phi, self.theta, self.psi]
-        self.trans = [self.x, self.y, self.z]
-        self.rot_frame = 0
-        self.trans_frame = 0
-        self.free_list = []
-        self.const_list = []
-        self.correspondence = {self.phi: 'X', self.theta: 'Y', self.psi: 'Z'}
-        self.c_string = 'XYZ'
-        self.n_free = 0
-    def define_rot_order(self, order):
-        self.rot_order = order
-        self.c_string = ''
-        for s in self.rot_order:
-            self.c_string += self.correspondence[s]
-    def define_freedoms(self, free_list):
-        self.free_list = free_list
-        self.n_free = len(free_list)
-    def define_constants(self, const_list):
-        self.const_list = const_list
-        
-##########################################################################
-# define useful joints here ...       
-joints = []
 
-joints.append(MBSjoint('rod-1-cardanic-efficient'))
-joints[-1].define_freedoms([joints[-1].psi])
-joints[-1].define_constants([joints[-1].y, joints[-1].theta])
-joints[-1].trans_frame = 1
-joints[-1].rot_frame = 0
-
-joints.append(MBSjoint('rod-1-cardanic'))
-joints[-1].define_freedoms([joints[-1].psi])
-joints[-1].define_constants([joints[-1].y, joints[-1].theta])
-joints[-1].trans_frame = 1
-joints[-1].rot_frame = 2
-
-joints.append(MBSjoint('x-axes'))
-joints[-1].define_freedoms([joints[-1].x])
-joints[-1].define_constants([])
-joints[-1].trans_frame = 1
-joints[-1].rot_frame = 2
-
-joints.append(MBSjoint('y-axes'))
-joints[-1].define_freedoms([joints[-1].y])
-joints[-1].define_constants([])
-joints[-1].trans_frame = 1
-joints[-1].rot_frame = 2
-
-joints.append(MBSjoint('z-axes'))
-joints[-1].define_freedoms([joints[-1].z])
-joints[-1].define_constants([])
-joints[-1].trans_frame = 1
-joints[-1].rot_frame = 2
-
-joints.append(MBSjoint('angle-rod'))
-joints[-1].define_freedoms([joints[-1].theta])
-joints[-1].define_constants([joints[-1].phi, joints[-1].y])
-joints[-1].define_rot_order([joints[-1].theta, joints[-1].phi, joints[-1].psi])
-joints[-1].trans_frame = 1
-joints[-1].rot_frame = 2
-
-joints.append(MBSjoint('rod-zero-X'))
-joints[-1].define_freedoms([])
-joints[-1].define_constants([joints[-1].x])
-joints[-1].trans_frame = 1
-joints[-1].rot_frame = 2
-
-joints.append(MBSjoint('rod-zero-Y'))
-joints[-1].define_freedoms([])
-joints[-1].define_constants([joints[-1].y])
-joints[-1].trans_frame = 1
-joints[-1].rot_frame = 2
-
-joints.append(MBSjoint('rod-zero-Z'))
-joints[-1].define_freedoms([])
-joints[-1].define_constants([joints[-1].z])
-joints[-1].trans_frame = 1
-joints[-1].rot_frame = 2
-
-joints.append(MBSjoint('rod-1-revolute'))
-joints[-1].define_freedoms([joints[-1].theta])
-joints[-1].define_rot_order([joints[-1].theta, joints[-1].phi, joints[-1].psi])
-joints[-1].define_constants([joints[-1].y])
-joints[-1].trans_frame = 1
-joints[-1].rot_frame = 2
-
-joints.append(MBSjoint('free-3-translate-z-rotate'))
-joints[-1].define_freedoms([joints[-1].theta, joints[-1].x, joints[-1].y, joints[-1].z])
-joints[-1].define_constants([])
-joints[-1].trans_frame = 0
-joints[-1].rot_frame = 2
-
-joints.append(MBSjoint('xz-plane'))
-joints[-1].define_freedoms([joints[-1].x, joints[-1].z])
-joints[-1].define_constants([])
-joints[-1].trans_frame = 0
-joints[-1].rot_frame = 0
-
-joints.append(MBSjoint('xy-plane'))
-joints[-1].define_freedoms([joints[-1].x, joints[-1].y])
-joints[-1].define_constants([])
-joints[-1].trans_frame = 0
-joints[-1].rot_frame = 0
-
-joints.append(MBSjoint('rod-2-cardanic'))
-joints[-1].define_freedoms([joints[-1].psi, joints[-1].theta])
-joints[-1].define_rot_order([joints[-1].psi, joints[-1].theta, joints[-1].phi])
-joints[-1].define_constants([joints[-1].y])
-joints[-1].trans_frame = 1
-joints[-1].rot_frame = 2
-
-joints.append(MBSjoint('rod-2-revolute-scharnier'))
-joints[-1].define_freedoms([joints[-1].theta, joints[-1].phi])
-joints[-1].define_rot_order([joints[-1].theta, joints[-1].phi, joints[-1].psi])
-joints[-1].define_constants([joints[-1].y])
-joints[-1].trans_frame = 1
-joints[-1].rot_frame = 2
-
-joints.append(MBSjoint('free-3-rotate'))
-joints[-1].define_freedoms([joints[-1].phi, joints[-1].theta, joints[-1].psi])
-joints[-1].define_constants([])
-joints[-1].trans_frame = 1
-joints[-1].rot_frame = 2
-
-joints.append(MBSjoint('free-3-translate'))
-joints[-1].define_freedoms([joints[-1].x, joints[-1].y, joints[-1].z])
-joints[-1].define_constants([])
-joints[-1].trans_frame = 0
-joints[-1].rot_frame = 2
-
-joints.append(MBSjoint('revolute-X'))
-joints[-1].define_freedoms([joints[-1].phi])
-joints[-1].define_constants([])
-joints[-1].trans_frame = 1
-joints[-1].rot_frame = 2
-
-joints.append(MBSjoint('revolute-Y'))
-joints[-1].define_freedoms([joints[-1].theta])
-joints[-1].define_constants([])
-joints[-1].trans_frame = 1
-joints[-1].rot_frame = 2
-
-joints.append(MBSjoint('revolute-Z'))
-joints[-1].define_freedoms([joints[-1].psi])
-joints[-1].define_constants([])
-joints[-1].trans_frame = 1
-joints[-1].rot_frame = 2
-
-joints.append(MBSjoint('free-6'))
-joints[-1].define_freedoms([joints[-1].phi, joints[-1].theta, joints[-1].psi, joints[-1].x, joints[-1].y, joints[-1].z])
-joints[-1].define_constants([])
-joints[-1].trans_frame = 0
-joints[-1].rot_frame = 0
-
-joints_names = [oo.name for oo in joints]
-def_joints = dict(zip(joints_names, joints))
 ######################################################################
 
 class MBSio(object):
@@ -913,8 +755,8 @@ class MBSworld(object):
         self.n_body += 1
         n_body = self.n_body  # number of the actual body (starts at 0)
         # create correct number of symbols for the next body
-        if joint in def_joints:
-            jobj = def_joints[joint]
+        if joint in joints.def_joints:
+            jobj = joints.def_joints[joint]
             d_free = jobj.n_free
             joint = 'general'
         else:
@@ -1165,7 +1007,7 @@ class MBSworld(object):
         n, N_fixed_n, _, body = self._interpretation_of_str_m_b(str_m_b)
         m, N_fixed_m, _, _ = self._interpretation_of_str_m_b(str_m_b_ref)
         n_vec = ( v[0] * N_fixed_m.x + v[1] * N_fixed_m.y + v[2] * N_fixed_m.z )
-        self.torques.append((N_fixed_n, n_vec*phi/sqrt(v[0]*v[0]+v[1]*v[1]+v[2]*v[2]) ))
+        self.torques.append((N_fixed_n, n_vec*phi/np_sqrt(v[0]*v[0]+v[1]*v[1]+v[2]*v[2]) ))
         
     def add_parameter_force(self, str_m_b, str_m_b_ref, v, para_name):
         """
@@ -1184,7 +1026,7 @@ class MBSworld(object):
         n, N_fixed_n, _, body = self._interpretation_of_str_m_b(str_m_b)
         m, N_fixed_m, _, _ = self._interpretation_of_str_m_b(str_m_b_ref)
         n_vec = v[0] * N_fixed_m.x + v[1] * N_fixed_m.y + v[2] * N_fixed_m.z
-        self.forces.append((N_fixed_n, n_vec*phi/sqrt(v[0]*v[0]+v[1]*v[1]+v[2]*v[2]) ))
+        self.forces.append((N_fixed_n, n_vec*phi/np_sqrt(v[0]*v[0]+v[1]*v[1]+v[2]*v[2]) ))
 
     def add_one_body_force_model(self, model_name, str_m_b, str_m_b_ref, typ='tire', parameters = []):
         """
@@ -1364,9 +1206,9 @@ class MBSworld(object):
         self.nv = nv = nv.subs({x:x_p, y:y_p, z:z_p})
         C = 1000. * factor
         if is_body:
-            gamma = 2.*sqrt(self.m[n]*C)
+            gamma = 2.*np_sqrt(self.m[n]*C)
         else:
-            gamma = 2.*sqrt(C)
+            gamma = 2.*np_sqrt(C)
         #check for const. forces (e.g. grav) -> Projectiorator ...
         for ii in range(len(self.forces)):
             if self.forces[ii][0] == Pt:
