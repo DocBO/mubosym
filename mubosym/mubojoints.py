@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 """
+Joint related code
+==================
 Created on Mon Sep  7 10:51:38 2015
 
 @author: oliver
@@ -7,6 +9,9 @@ Created on Mon Sep  7 10:51:38 2015
 from sympy import symbols
 
 class MBSjoint(object):
+    """
+    Class representing a joint.
+    """
     def __init__(self, name):
         self.name = name
         self.x, self.y, self.z = symbols('x y z')

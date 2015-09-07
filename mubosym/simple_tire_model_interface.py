@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-simple_tire_model_interface
-===========================
+External tire model interface (based on Pacejka Model)
+======================================================
 Created on Wed May 27 18:02:53 2015
 
 @author: oliver

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-all mubosym related core classes
+All mubosym related core classes
 ================================
 Created on Sun Mar  8 11:50:46 2015
 
@@ -227,6 +227,21 @@ class MBSbody(object):
         return self.small_angles
             
 class MBScontrolSignal(object):
+    """
+    Class representing control signals. Can be created by any expression. 
+    The user can generate expression via the body-functions: x(), y(), z() ... 
+    The bodies can be retrieved by myMBS.get_body(name). After the generation of an expression
+    it can be put into a control-signal object, by this it is calculated automatically at every time-step.    
+    The signal can be used any time during the solver process via the function myMBS.get_control_signal(channel-number)
+    The channel-number is up-counted automatically at the instance of creation.
+    
+    The signals can be plotted after calculatiot by use of myMBS.plotting(t_max, dt, plots='signals').
+    
+    Dev-Notes: Signals are not stored at the moment. (will be changed soon).
+    :param expr: the signal expression (can include all generalized coordinates)
+    :param name: the signals name
+    :param unit: the signals unit
+    """
     def __init__(self, expr, name, unit):
         self.name = name
         self.expr = expr
@@ -248,6 +263,12 @@ class MBScontrolSignal(object):
         return self.value
         
 class MBSmarker(object):
+    """
+    Class representing marker. Marker can be produced in relation to a fixed body frame.
+    Marker are added via the function myMBS.add_marker(...).
+    
+    Dev-Notes: Since it is a frame it can be derived from a MBSframe in the future
+    """
     def __init__(self, name, frame, body_name):
         self.name = name
         self.frame = frame
@@ -284,6 +305,16 @@ class MBSmarker(object):
         self.frame.set_dicts(dicts)
 
 class MBSparameter(object):
+    """
+    Class representing parameters, as a control possibility of forces, torques and moving frames.
+    Since in moving frames it happens that first and second derivatives coming up in the equations of motion we 
+    need functions for all three, including symbols for all three.
+    Parameters can be added to the world by use of the function myMBS.add_parameters().
+    
+    Therein the name which is the hook for the user and either three python functions are set or an analytic sympy-expression.
+    
+    Dev-Notes: is diff_dict here as parameter necessary ??
+    """
     def __init__(self, name, sym, sym_dt, sym_ddt, func, func_dt, func_ddt, diff_dict, const = 0.):
         self.name = name
         self.sym = sym
