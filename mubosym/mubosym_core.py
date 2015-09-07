@@ -81,11 +81,12 @@ class MBSframe(ReferenceFrame):
         ReferenceFrame.__init__(self,Name)
         self.Orig = Point('O_'+Name)
         self.Orig.set_pos(O, 0.*IF.x)
-        self.phi = 0.
+        self.phi, self.theta, self.psi = symbols('phi theta psi')
         self.pos = 0.*IF.x
         self.vel = 0.*IF.x
         self.acc = 0.*IF.x
         self.dicts = {}
+        self.free_dict = {}
     def set_pos_vec_IF(self, vec):
         self.pos = vec
         self.vel = vec.diff(t, IF)
@@ -133,6 +134,23 @@ class MBSframe(ReferenceFrame):
         return self.acc.dot(IF.y).subs(self.dicts)
     def pz_ddt(self):
         return self.acc.dot(IF.z).subs(self.dicts)
+    def set_freedoms_dict(self, free_dict):
+        self.free_dict = free_dict
+    def get_phi(self):
+        if self.phi in self.free_dict:
+            return self.free_dict[self.phi]
+        else:
+            return 0.
+    def get_theta(self):
+        if self.theta in self.free_dict:
+            return self.free_dict[self.theta]
+        else:
+            return 0.
+    def get_psi(self):
+        if self.psi in self.free_dict:
+            return self.free_dict[self.psi]
+        else:
+            return 0.
     def set_dicts(self, dicts):
         for d in dicts:
             self.dicts.update(d)
@@ -150,6 +168,8 @@ class MBSbody(object):
         self.N_att = N_att
         self.N_att_fixed = N_att_fixed
         self.attached_to_marker = atm #string name of marker
+        self.small_angles = []
+        self.free_dict = {}
     def get_vel(self):
         return self.vel
     def get_vel_magnitude(self):
@@ -164,6 +184,8 @@ class MBSbody(object):
         return self.frame.py()
     def z(self):
         return self.frame.pz()
+    def phi(self):
+        return self.frame.phi()
     def x_dt(self):
         return self.frame.px_dt()
     def y_dt(self):
@@ -176,6 +198,12 @@ class MBSbody(object):
         return self.frame.py_ddt()
     def z_ddt(self):
         return self.frame.pz_ddt()
+    def get_phi(self):
+        return self.frame.get_phi()
+    def get_theta(self):
+        return self.frame.get_theta()
+    def get_psi(self):
+        return self.frame.get_psi()
     def get_frame(self):
         return self.frame
     def get_n(self):
@@ -186,8 +214,15 @@ class MBSbody(object):
         return self.N_att_fixed
     def get_mass(self):
         return self.mass
+    def set_freedoms_dict(self, f_dict):
+        self.frame.set_freedoms_dict(f_dict)
+        self.free_dict = f_dict
     def set_dicts(self, dicts):
         self.frame.set_dicts(dicts)
+    def set_small_angles(self, angle_list):
+        self.small_angles = angle_list
+    def get_small_angles(self):
+        return self.small_angles
             
 class MBScontrolSignal(object):
     def __init__(self, expr, name, unit):
@@ -953,6 +988,7 @@ class MBSworld(object):
         else:
             joint_name = joint
         self.bodies_obj.update({new_body_name:MBSbody(n_body,new_body_name, mass, I, pos_pt, vel_pt, N_fixed, joint_name, N_att, N_att_fixed, str_n_marker) })
+        self.bodies_obj[new_body_name].set_freedoms_dict(free_dict)
         print( "body no:", n_body )
         print( "body has joint:", joint_name )
         print( "body pos:", pos_pt )
@@ -1598,6 +1634,22 @@ class MBSworld(object):
             self.M.simplify()
             self.F.simplify()
         ########################################################
+        # calc simplifications due to small angles
+        for oo in self.bodies_obj.values():
+            small = oo.get_small_angles()
+            if small:
+                print("small: ", oo.name)
+                sin_small = [sin(ii) for ii in small]
+                cos_small = [cos(ii) for ii in small]
+                sin_small_dict = dict(zip(sin_small, small))
+                cos_small_dict = dict(zip(cos_small, [1.0]*len(small)))
+                print (cos_small_dict, sin_small_dict)
+                self.M = self.M.subs(sin_small_dict)
+                self.M = self.M.subs(cos_small_dict)
+                self.F = self.F.subs(sin_small_dict)
+                self.F = self.F.subs(cos_small_dict)
+            
+        
         print( "equations now in ram... lambdify the M,F parts" )
         self.M_func = lambdify(self.dynamic, self.M)               # Create a callable function to evaluate the mass matrix
         self.F_func = lambdify(self.dynamic, self.F)               # Create a callable function to evaluate the forcing vector
