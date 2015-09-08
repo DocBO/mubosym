@@ -12,6 +12,7 @@ import numpy as np
 
 b      = [1.5,0.,1100.,0.,300.,0.,0.,0.,-2.,0.,0.,0.,0.,0.]
 a      = [1.4,0.,1100.,1100.,10.,0.,0.,-2.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.]
+eps = 50.0
 
 def Pacejka_F_long(Fz, slip):
     """
@@ -20,7 +21,7 @@ def Pacejka_F_long(Fz, slip):
     :param (float) Fz: Force in vertical direction in N
     :param (float) slip: relative slip fraction (0..1)
     """
-    if Fz == 0:
+    if Fz < eps:
         return 0.
     slip = slip*100.0
     Fz = Fz/1000.0
@@ -43,7 +44,7 @@ def Pacejka_F_lat(Fz, alpha, camber):
     :param (float) alpha: slip angle in rad
     :param (float) camber: camber angle in rad
     """
-    if Fz == 0:
+    if Fz < eps:
         return 0.
     alpha = alpha * 180.0/np.pi
     camber = camber * 180.0/np.pi

@@ -1580,7 +1580,6 @@ class MBSworld(object):
         arguments = hstack((x,f_t))       # States, input, and parameters
         #lu = factorized(self.M_func(*arguments))
         #dx = lu(self.F_func(*arguments)).T[0]
-
         dx = array(np_solve(self.M_func(*arguments),self.F_func(*arguments))).T[0]
         return dx
 
@@ -1591,16 +1590,28 @@ class MBSworld(object):
             return 0.
 
     def right_hand_side_ode(self, t ,x ):
+        #for filling up order of f_t see kaneify self.dynamics ...
         para = [ pf(t) for oo in self.param_obj for pf in oo.get_func()]
-        f_t = [t] + [fe(t) for fe in self.f_ext_func] + para + \
-        [fi(*x) for fi in f_int_lamb]
-        inp = hstack((x, [t]+para))
+        r_int = [r(*x) for r in self.f_int_lamb]
+        f_int = [self.f_int_func[i](r_int[i]) for i in range(len(r_int))]
+        f_t = [t] + [fe(t) for fe in self.f_ext_func] + para + f_int
+
+        inp = hstack((x, [t] + para))
         for ii in range(self.forces_models_n):
             F_T_model, model_signals = self.f_models_lamb[ii](inp)
             f_t += F_T_model
+        #generate the control signals (to control somewhere else)
+        for oo in self.control_signals_obj:
+            v = oo.calc_signal(x)
+        #checkpoint output
+        if t>self.tau_check:
+            self.tau_check+=0.1
+            print( t )
 
         arguments = hstack((x,f_t))       # States, input, and parameters
-        dx = array(sc_solve(self.M_func(*arguments),self.F_func(*arguments))).T[0]
+        #lu = factorized(self.M_func(*arguments))
+        #dx = lu(self.F_func(*arguments)).T[0]
+        dx = array(np_solve(self.M_func(*arguments),self.F_func(*arguments))).T[0]
         return dx
 
     def res_body_pos_IF(self):
@@ -1958,7 +1969,7 @@ class MBSworld(object):
             n_signals = len(self.control_signals_obj)
             for n in range(n_signals):
                 plt.subplot(n_signals, 1, n+1)
-                lines = plt.plot(self.time, array(self.control_signals_results)[:,n])
+                lines = plt.plot(array(self.control_signals_results)[:,2], array(self.control_signals_results)[:,n])
                 leg = plt.legend(['Signal '+str(n)])
                 lab = plt.xlabel(self.control_signals_obj[n].name+" in "+self.control_signals_obj[n].unit)
             plt.show()  
@@ -1976,14 +1987,6 @@ class MBSworld(object):
         a = a.s_animation(self.state, self.orient, self.con, self.con_type, self.bodies_in_graphics, self.speed, dt, t_ani, time_scale, scale, labels = labels, center = center)
         return a
 
-    def prepare_integrator_pp(self, x0, delta_t):
-        self.ode15s = ode(self.right_hand_side_ode)
-        self.ode15s.set_integrator('lsoda', method='lsoda', min_step = 1e-6, atol = 1e-6, rtol = 1e-5, with_jacobian=False)
-        self.ode15s.set_initial_value(x0, 0.)
-        self.delta_t = delta_t
-    def inte_grate_pp(self):
-        self.ode15s.integrate(self.ode15s.t+self.delta_t)
-        return self.ode15s.y, self.ode15s.t
 
     def inte_grate_full(self, x0, t_max, delta_t, mode = 0, tolerance = 1.0):
         global IF, O, g, t
@@ -1995,15 +1998,16 @@ class MBSworld(object):
         #some int stuff
         if mode == 1:
             ode15s = ode(self.right_hand_side_ode)
-            ode15s.set_integrator('lsoda', min_step = 1e-6, atol = 1e-6, rtol = 1e-7, with_jacobian=False)
+            ode15s.set_integrator('lsoda', min_step = 1e-6, atol = 1e-6, rtol = 1e-5, with_jacobian=False)
+            #ode15s.set_integrator('dop853', atol = 1e-6, rtol = 1e-5 )
             #method = 'bdf'
             ode15s.set_initial_value(x0, 0.)
             self.x_t = x0
-            while ode15s.t < t_max:
+            while ode15s.t < t_max-delta_t:
                 ode15s.integrate(ode15s.t+delta_t)
                 self.x_t = vstack((self.x_t,ode15s.y))
         elif mode == 0:
-            self.x_t = odeint(self.right_hand_side, x0, self.time, args=([0.,0.],) , hmax = 1.0e-1, hmin = 1.0e-7*tolerance, atol = 1e-5*tolerance, rtol = 1e-5*tolerance, mxords = 4, mxordn = 8)
+            self.x_t = odeint(self.right_hand_side, x0, self.time, args=([0.,0.],) , hmax = 1.0e-1, hmin = 1.0e-7, atol = 1e-5*tolerance, rtol = 1e-5*tolerance) #, mxords = 4, mxordn = 8)
 
         end = time.clock()
         print( "end integration ...", end-start )
