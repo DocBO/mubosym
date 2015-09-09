@@ -103,7 +103,7 @@ myMBS.add_force_special('body_car', 'grav')
 name = mbs.DATA_PATH+'/line_01.dat'
 kst = interp_dl(filename = name)
 
-@mbs.static_vars(t_p=0, dist_p=0, tau=0, phi_out=0., phi_int=0.)
+@mbs.static_vars(t_p=0, dist_p=0, tau=0, phi_out=0., phi_int=0., n=0)
 def rotation_inp(t):
     bz = myMBS.get_control_signal(1)
     bx = myMBS.get_control_signal(2)
@@ -116,14 +116,17 @@ def rotation_inp(t):
         #dist = (rotation_inp.dist_p *0.1 + dist* delt) / (delt + 0.1) 
         rotation_inp.t_p = t
         #rotation_inp.dist_p = dist
-        rotation_inp.phi_int -= dist/1e+3
-        rotation_inp.phi_out = t_diff/0.5e+2 + rotation_inp.phi_int - dist/1e+3
+        rotation_inp.phi_int -= dist*1.0e-3
+        rotation_inp.phi_out = t_diff*1.0e-2 + rotation_inp.phi_int - dist*5.0e-3
         if rotation_inp.phi_out > 0.12:
             rotation_inp.phi_out = 0.12
         elif rotation_inp.phi_out < -0.12:
             rotation_inp.phi_out = -0.12
             
         print t, delt, rotation_inp.phi_out, dist, t_diff
+        #rotation_inp.n += 1
+        #if rotation_inp.n > 20:
+        #    rotation_inp.phi_int = 0.
     return rotation_inp.phi_out
     #return A*np.sin(omega*t)
 
