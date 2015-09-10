@@ -19,19 +19,6 @@ from vispy.visuals.transforms import STTransform,MatrixTransform
 This example demonstrates how to create visuals.
 """
 
-class dummy(scene.visuals.Cube):
-    """
-    creates a custom draft to demonstrate what is not working
-    """
-    def __init__(self,view,x,y,z,face_color,edge_color):
-        scene.visuals.Cube.__init__(self,(x,y,z),color=face_color,edge_color=edge_color,parent=view)
-
-    def trafo(self,x=0.,y=0.,z=0.,angle=0.,al=0.,be=0.,ga=0.):
-        #Not Working
-        self.transform = MatrixTransform()
-        
-        self.transform = self.transform.translate([x,y,z])
-        self.transform = self.transform.rotate(angle,[al,be,ga])
 
 #Volume = create_visual_node(visuals.VolumeVisual)
 
@@ -186,17 +173,17 @@ body_frame = mbFrame(view.scene)
 
 #view,a,b,c,face_color,edge_color
 
-#cube1 = Cubo(view.scene,2,3,1,'red','black')
+cube1 = mbCube(view.scene,1.5,1.5,1.5,'green','black')
 
 cube = mbCube(view.scene,2,3,1,'red','black')
 
 sphere = mbSphere(view.scene,2,'blue','black')
 
-cube.trafo(x=4,y=-2)
+cube1.trafo(x=4,y=-2)
 
 cube.trafo(x=-2,y=4)
 #
-sphere.trafo(x=2.5,y=1.,z=2)
+sphere.trafo(x=-2.5,y=-2.,z=-3)
 
 
 view.camera.set_range(x=[-3, 3])
