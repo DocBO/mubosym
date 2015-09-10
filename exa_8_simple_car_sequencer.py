@@ -131,6 +131,9 @@ myMBS.add_control_signal(vel_1)
 #to settle car ...
 for b in myMBS.bodies.keys():
     myMBS.add_damping(b, 10.0)
+    
+body = myMBS.get_body('body_car')
+body.set_small_angles([body.get_phi(), body.get_psi()])
 
 myMBS.kaneify(simplify=False)
 
