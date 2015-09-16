@@ -16,7 +16,7 @@ except:
     print( 'can not use pandas here' )
     no_pandas = True
 
-from sympy import symbols, lambdify, sign, re, acos, asin, sin, cos, Poly
+from sympy import symbols, lambdify, sign, re, acos, asin, sin, cos, Poly, sqrt
 from sympy.physics.mechanics import ( Vector, ReferenceFrame, Point, dynamicsymbols, outer,
                         RigidBody, KanesMethod, gradient)
 from sympy.solvers import solve as sp_solve
@@ -41,6 +41,7 @@ from symTools import list_to_world, worldData
 #########################################
 from interp1d_interface import interp
 from one_body_force_model_interface import one_body_force_model
+from two_body_force_model_interface import two_body_force_model
 from simple_tire_model_interface import simple_tire_model
 
 ### Imports always on top...
@@ -889,7 +890,16 @@ class MBSworld(object):
 
     def get_model(self, name):
         return self.models_obj[name]
-
+        
+    def get_distance(self, str_m_b_i, str_m_b_j ):
+        i, N_fixed_i, _, body_i = self._interpretation_of_str_m_b(str_m_b_i)
+        j, N_fixed_j, _, body_j = self._interpretation_of_str_m_b(str_m_b_j)
+        del_x = body_i.x()-body_j.x()
+        del_y = body_i.y()-body_j.y()
+        del_z = body_i.z()-body_j.z()
+        r = sqrt(del_x*del_x + del_y*del_y + del_z*del_z)
+        return r
+        
     def add_force(self, str_m_b_i, str_m_b_j, parameters = []):
         """
         Interaction forces between body/marker i and j via spring damper element.
@@ -1117,9 +1127,49 @@ class MBSworld(object):
 
         force = self.f_t_models_sym[-6]*N_fixed_m.x + self.f_t_models_sym[-5]*N_fixed_m.y + self.f_t_models_sym[-4]*N_fixed_m.z
         torque = self.f_t_models_sym[-3]*N_fixed_m.x + self.f_t_models_sym[-2]*N_fixed_m.y + self.f_t_models_sym[-1]*N_fixed_m.z
-        #print "TTT: ",torque
         self.forces.append((Pt_n,force))
         self.torques.append((N_fixed_n, torque))
+        
+    def add_two_body_force_model(self, model_name, str_m_b_n, str_m_b_m, typ='harmonic', parameters = []):
+        """
+        Add an (external) model force/torque for one body: the force/torque is acting
+        on the body if the parameter is a body string and on the marker if it is a marker string
+
+        :param str_m_b: a body name or a marker name
+        :param str_m_b_ref: a body name or a marker name as a reference where vel and omega is transmitted to the model and in which expressed the force and torque is acting
+        :param typ: the type of the model (the types can be extended easily, you are free to provide external models via the interface)
+        :param parameters: a dict of parameters applied to the force model as initial input
+        """
+        global IF, O, g, t
+        F = []
+        self.forces_models_n += 1
+        n, N_fixed_n, _, body_n = self._interpretation_of_str_m_b(str_m_b_n)
+        m, N_fixed_m, _, body_m = self._interpretation_of_str_m_b(str_m_b_m)
+
+        F = dynamicsymbols('F_models_tb'+str(n))
+        self.f_t_models_sym += [F]
+
+        Pt_n = N_fixed_n.get_pos_Pt()
+        Pt_m = N_fixed_m.get_pos_Pt()
+        # prepare body symbols
+        x = -body_n.x()+body_m.x()
+        y = -body_n.y()+body_m.y()
+        z = -body_n.z()+body_m.z()
+        r_nm = x*IF.x + y*IF.y + z*IF.z        
+        r = sqrt(x*x+y*y+z*z)
+        r_nm_0 = r_nm/(r+1e-5) 
+        r_pt = r.diff(t)
+
+        #get the model and supply the trafos
+        if typ == 'harmonic':
+            oo = two_body_force_model(parameters)
+            self.models.append(oo)
+            self.models_obj.update({model_name: MBSmodel(model_name, oo) })
+        else:
+            raise InputError("Please provide a valid two_body_force_model")
+        self.models[-1].set_coordinate_trafo([r, r_pt])
+        self.forces.append((Pt_n, F*r_nm_0))
+        self.forces.append((Pt_m,-F*r_nm_0))
 
     def add_force_spline_r(self, str_m_b_i, str_m_b_j, filename, param = [0., 1.0]):
         """

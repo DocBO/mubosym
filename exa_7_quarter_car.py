@@ -13,7 +13,7 @@ from interp1d_interface import interp
 
 ###############################################################
 # general system setup example
-myMBS = mbs.MBSworld('quarter_car', connect=True, force_db_setup=False)
+myMBS = mbs.MBSworld('quarter_car', connect=True, force_db_setup=True)
 
 #prepare a standard 
 I_car = [500.,500.,500.]
@@ -88,9 +88,11 @@ myMBS.add_force_special('tire', 'grav')
 #myMBS.add_force_special('tire_carrier', 'spring-damper-axes', parameters = [20000., -0.9, 500.])
 #myMBS.add_force('tire_carrier', 'car_body_M0', parameters = [20000., 0.8, 700.])
 
-myMBS.add_force_spline_r('tire_carrier', 'car_body_M0', mbs.DATA_PATH+"/force_spring.dat", [0.8, 1.0])
-myMBS.add_force_spline_v('tire_carrier', 'car_body_M0', mbs.DATA_PATH+"/force_damper.dat", [1.0])
+#myMBS.add_force_spline_r('tire_carrier', 'car_body_M0', mbs.DATA_PATH+"/force_spring.dat", [0.8, 1.0])
+#myMBS.add_force_spline_v('tire_carrier', 'car_body_M0', mbs.DATA_PATH+"/force_damper.dat", [1.0])
 
+myMBS.add_two_body_force_model('suspension', 'tire_carrier', 'car_body_M0', 'harmonic')#, [20000., 0.9, 500.])
+suspension = myMBS.get_model('suspension')
 myMBS.add_one_body_force_model('tiremodel', 'tire', 'tire_carrier_M0', 'tire')
 
 
@@ -103,6 +105,10 @@ dist_z = myMBS.get_body('tire').z()
 myMBS.add_control_signal(dist_z, "Abstand zur Spur", "m")
 dist_x = myMBS.get_body('tire').x()
 myMBS.add_control_signal(dist_x, "Fahrstrecke", "m")
+deflection = myMBS.get_distance('tire', 'car_body')
+
+myMBS.add_control_signal(deflection, "deflection", "m")
+suspension.add_signal(deflection)
 ##################################
 # try to add into model
 m1 = myMBS.get_model('tiremodel')

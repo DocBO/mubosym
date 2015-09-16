@@ -10,7 +10,7 @@ Created on Wed May 27 18:02:53 2015
 import sys
 from sympy import lambdify, symbols
 
-class one_body_force_model():
+class two_body_force_model():
     '''
     a one body force model consists of:
     
@@ -19,11 +19,16 @@ class one_body_force_model():
     * some preparation function: lambdifier to include symbolic functions into lambdas
     
     '''
-    def __init__(self):
+    def __init__(self, para = []):
         # setup parameters
-        self.D = 200000.
-        self.gamma = 200.0
-        self.y0 = -1.0
+        if len(para) > 0:
+            self.D = para[0]
+            self.gamma = para[2]
+            self.r0 = para[1]
+        else:
+            self.D = 20000.
+            self.gamma = 500.0
+            self.r0 = 0.9
         self.trafo = []
         self.signals = []
         self.signals_values = []
@@ -31,72 +36,58 @@ class one_body_force_model():
         
     def set_coordinate_trafo(self, tr):
         """
-        input function for the coordinate trafo expressions (sympy)
+        input function for the coordinate trafo expressions (sympy) for two bodies, order see function lambdify_trafo
         """
         self.trafo = tr
         
+    def set_kindiff_dict(self, kindiff_dict):
+        for ii in range(len(self.trafo)):
+            self.trafo[ii] = self.trafo[ii].subs(kindiff_dict)
+            
     def set_subs_dicts(self, subs_dicts):
         for sd in subs_dicts:
             for ii in range(len(self.trafo)):
                 self.trafo[ii] = self.trafo[ii].subs(sd)
             for ii in range(len(self.signals)):
                 self.signals[ii] = self.signals[ii].subs(sd)
-                            
+                
+            
     def add_signal(self, expr):
         self.signals.append(expr)
-        
-    def set_kindiff_dict(self, kindiff_dict):
-        for ii in range(len(self.trafo)):
-            self.trafo[ii] = self.trafo[ii].subs(kindiff_dict)
         
     def lambdify_trafo(self, generalized_coords):
         """
         this is the core function to lambdify the coordinate trafos in general the trafos must be explicitely set via set_coordinate_trafo called from MBSCore (see therein)
         """
-        if len(self.trafo) < 12:
+        if len(self.trafo) < 2:
             print("call set_coordinate_trafo first")
             sys.exit(0)
         t = symbols('t')
+        print generalized_coords
         self.lam_t = lambdify(generalized_coords, t)
-        self.lam_x = lambdify(generalized_coords, self.trafo[0])
-        self.lam_y = lambdify(generalized_coords, self.trafo[1])
-        self.lam_z = lambdify(generalized_coords, self.trafo[2])
-        self.lam_nx = lambdify(generalized_coords, self.trafo[3])
-        self.lam_ny = lambdify(generalized_coords, self.trafo[4])
-        self.lam_nz = lambdify(generalized_coords, self.trafo[5])
-        self.lam_x_pt = lambdify(generalized_coords, self.trafo[6])
-        self.lam_y_pt = lambdify(generalized_coords, self.trafo[7])
-        self.lam_z_pt = lambdify(generalized_coords, self.trafo[8])
-        self.lam_omega_x = lambdify(generalized_coords, self.trafo[9])
-        self.lam_omega_y = lambdify(generalized_coords, self.trafo[10])
-        self.lam_omega_z = lambdify(generalized_coords, self.trafo[11])
+        self.lam_r = lambdify(generalized_coords, self.trafo[0])
+        self.lam_r_pt = lambdify(generalized_coords, self.trafo[1])
         self.lam_signals = [ lambdify(generalized_coords, expr) for expr in self.signals] 
         
     def trafo_lam(self, w):
         """
         just for reference all coordinate trafos as lambdas (not used at the moment)
         """
-        return [self.lam_x(*w), self.lam_y(*w), self.lam_z(*w), \
-                self.lam_nx(*w), self.lam_ny(*w), self.lam_nz(*w), \
-                self.lam_x_pt(*w), self.lam_y_pt(*w), self.lam_z_pt(*w), \
-                self.lam_omega_x(*w), self.lam_omega_y(*w), self.lam_omega_z(*w)]
+        return [self.lam_r(*w),self.lam_r_pt(*w)]
     
     def force_lam(self, w):
         """
         the model force/torque via lambdified expressions, input parameter here is always the full state vecor t,q,u
         Output is the force/toque via the model calc-function the nested input for the calc routine is fully possible written out:
         
-        * self.lam_t, self.lam_x, self.lam_y, self.lam_z,
-        * self.lam_nx, self.lam_ny, self.lam_nz, 
-        * self.lam_x_pt, self.lam_y_pt, self.lam_z_pt, 
-        * self.lam_omega_x self.lam_omega_y, self.lam_omega_z 
+        * self.lam_t, self.lam_r, self.lam_r_pt
         
         but can be reduced to a subset
         """
         self.signals_values = [x(*w) for x in self.lam_signals]
-        return self.calc([ self.lam_y(*w), self.lam_y_pt(*w) ] )
+        return self._calc([ self.lam_r(*w), self.lam_r_pt(*w) ] )
                 
-    def calc(self, inp):
+    def _calc(self, inp):
         """
         the python function which connects some external model calculation with the mbs model e.g. tire-model, rail model
         
@@ -105,19 +96,10 @@ class one_body_force_model():
         
         """
         in_signals = self.signals_values
-        [ y , y_pt] = inp
-        F_x = 0.
-        if y<0:
-            F_y = -self.D*(y-self.y0) - self.gamma*y_pt
-        else:
-            F_y = 0.
-        F_z = 0.
-        T_x = 0.
-        T_y = 0.
-        T_z = 0.
-        
-        return [F_x, F_y, F_z, T_x, T_y, T_z]
+        #print in_signals
+        [ r , r_pt] = inp
+        F_r = self.D*(r-self.r0) + self.gamma*r_pt
+        return [F_r],[r, r_pt]
         
     def get_signal_length(self):
-        return 0
-    
+        return 2
