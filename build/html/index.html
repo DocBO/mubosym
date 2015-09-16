@@ -56,7 +56,7 @@
 </ul>
 </div>
 <span class="target" id="module-mubosym_core"></span><div class="section" id="all-mubosym-related-core-classes">
-<h2>all mubosym related core classes<a class="headerlink" href="#all-mubosym-related-core-classes" title="Permalink to this headline">¶</a></h2>
+<h2>All mubosym related core classes<a class="headerlink" href="#all-mubosym-related-core-classes" title="Permalink to this headline">¶</a></h2>
 <p>Created on Sun Mar  8 11:50:46 2015</p>
 <p>&#64;author: oliver</p>
 <dl class="exception">
@@ -78,9 +78,52 @@
 </dd></dl>
 
 <dl class="class">
+<dt id="mubosym_core.MBScontrolSignal">
+<em class="property">class </em><code class="descclassname">mubosym_core.</code><code class="descname">MBScontrolSignal</code><span class="sig-paren">(</span><em>expr</em>, <em>name</em>, <em>unit</em><span class="sig-paren">)</span><a class="headerlink" href="#mubosym_core.MBScontrolSignal" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class representing control signals. Can be created by any expression. 
+The user can generate expression via the body-functions: x(), y(), z() ... 
+The bodies can be retrieved by myMBS.get_body(name). After the generation of an expression
+it can be put into a control-signal object, by this it is calculated automatically at every time-step.    
+The signal can be used any time during the solver process via the function myMBS.get_control_signal(channel-number)
+The channel-number is up-counted automatically at the instance of creation.</p>
+<p>The signals can be plotted after calculatiot by use of myMBS.plotting(t_max, dt, plots=&#8217;signals&#8217;).</p>
+<p>Dev-Notes: Signals are not stored at the moment. (will be changed soon).
+:param expr: the signal expression (can include all generalized coordinates)
+:param name: the signals name
+:param unit: the signals unit</p>
+</dd></dl>
+
+<dl class="class">
 <dt id="mubosym_core.MBSframe">
 <em class="property">class </em><code class="descclassname">mubosym_core.</code><code class="descname">MBSframe</code><span class="sig-paren">(</span><em>Name</em><span class="sig-paren">)</span><a class="headerlink" href="#mubosym_core.MBSframe" title="Permalink to this definition">¶</a></dt>
 <dd><p>This class represents a moving frame. (sympy only provides rotating frames up to now)</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="mubosym_core.MBSio">
+<em class="property">class </em><code class="descclassname">mubosym_core.</code><code class="descname">MBSio</code><span class="sig-paren">(</span><em>filename, MBworld=None, save=False, params=['state', 'orient', 'con', 'e_kin', 'time', 'x_t', 'acc', 'e_pot', 'e_tot', 'e_rot', 'speed', 'model_signals_results']</em><span class="sig-paren">)</span><a class="headerlink" href="#mubosym_core.MBSio" title="Permalink to this definition">¶</a></dt>
+<dd><p>This class creates a dummy MBSworld object and returns it for the user to play with.</p>
+<p>But maybee an IO handling class should be created instead?</p>
+<p>imagine just passing a MBSworld object and executing animate() from here</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="mubosym_core.MBSmarker">
+<em class="property">class </em><code class="descclassname">mubosym_core.</code><code class="descname">MBSmarker</code><span class="sig-paren">(</span><em>name</em>, <em>frame</em>, <em>body_name</em><span class="sig-paren">)</span><a class="headerlink" href="#mubosym_core.MBSmarker" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class representing marker. Marker can be produced in relation to a fixed body frame.
+Marker are added via the function myMBS.add_marker(...).</p>
+<p>Dev-Notes: Since it is a frame it can be derived from a MBSframe in the future</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="mubosym_core.MBSparameter">
+<em class="property">class </em><code class="descclassname">mubosym_core.</code><code class="descname">MBSparameter</code><span class="sig-paren">(</span><em>name</em>, <em>sym</em>, <em>sym_dt</em>, <em>sym_ddt</em>, <em>func</em>, <em>func_dt</em>, <em>func_ddt</em>, <em>diff_dict</em>, <em>const=0.0</em><span class="sig-paren">)</span><a class="headerlink" href="#mubosym_core.MBSparameter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class representing parameters, as a control possibility of forces, torques and moving frames.
+Since in moving frames it happens that first and second derivatives coming up in the equations of motion we 
+need functions for all three, including symbols for all three.
+Parameters can be added to the world by use of the function myMBS.add_parameters().</p>
+<p>Therein the name which is the hook for the user and either three python functions are set or an analytic sympy-expression.</p>
+<p>Dev-Notes: is diff_dict here as parameter necessary ??</p>
 </dd></dl>
 
 <dl class="class">
@@ -328,6 +371,26 @@ on the body if the parameter is a body string and on the marker if it is a marke
 </dd></dl>
 
 <dl class="method">
+<dt id="mubosym_core.MBSworld.add_parameter_force">
+<code class="descname">add_parameter_force</code><span class="sig-paren">(</span><em>str_m_b</em>, <em>str_m_b_ref</em>, <em>v</em>, <em>para_name</em><span class="sig-paren">)</span><a class="headerlink" href="#mubosym_core.MBSworld.add_parameter_force" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add an external force to a body in the direction v, the abs value is equal the value of the parameter (para_name)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>str_m_b</strong> &#8211; a body name or a marker name</li>
+<li><strong>str_m_b_ref</strong> &#8211; a body name or a marker name as a reference where vel and omega is transmitted to the model and in which expressed the force and torque is acting</li>
+<li><strong>v</strong> &#8211; direction of the force (not normalized)</li>
+<li><strong>para_name</strong> &#8211; name of the parameter</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
 <dt id="mubosym_core.MBSworld.add_parameter_torque">
 <code class="descname">add_parameter_torque</code><span class="sig-paren">(</span><em>str_m_b</em>, <em>str_m_b_ref</em>, <em>v</em>, <em>para_name</em><span class="sig-paren">)</span><a class="headerlink" href="#mubosym_core.MBSworld.add_parameter_torque" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add an external torque to a body in the direction v, the abs value is equal the value of the parameter (para_name)</p>
@@ -446,18 +509,6 @@ on the body if the parameter is a body string and on the marker if it is a marke
 </dd></dl>
 
 <dl class="method">
-<dt id="mubosym_core.MBSworld.get_pt_pos">
-<code class="descname">get_pt_pos</code><span class="sig-paren">(</span><em>n</em>, <em>frame</em>, <em>coord</em><span class="sig-paren">)</span><a class="headerlink" href="#mubosym_core.MBSworld.get_pt_pos" title="Permalink to this definition">¶</a></dt>
-<dd><p>coord is 0..2</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="mubosym_core.MBSworld.get_pt_vel">
-<code class="descname">get_pt_vel</code><span class="sig-paren">(</span><em>n</em>, <em>frame</em>, <em>coord</em><span class="sig-paren">)</span><a class="headerlink" href="#mubosym_core.MBSworld.get_pt_vel" title="Permalink to this definition">¶</a></dt>
-<dd><p>coord is 0..2 (x,y,z-direction)</p>
-</dd></dl>
-
-<dl class="method">
 <dt id="mubosym_core.MBSworld.linearize">
 <code class="descname">linearize</code><span class="sig-paren">(</span><em>x_op</em>, <em>a_op</em>, <em>quad=False</em><span class="sig-paren">)</span><a class="headerlink" href="#mubosym_core.MBSworld.linearize" title="Permalink to this definition">¶</a></dt>
 <dd><p>Function to prepare the linerarization process (kaneify_lin)</p>
@@ -502,11 +553,29 @@ on the body if the parameter is a body string and on the marker if it is a marke
 </dd></dl>
 
 </div>
-<span class="target" id="module-b_splines_interface"></span><p>Created on Sat May 16 18:33:20 2015</p>
+<span class="target" id="module-mubojoints"></span><div class="section" id="joint-related-code">
+<h2>Joint related code<a class="headerlink" href="#joint-related-code" title="Permalink to this headline">¶</a></h2>
+<p>Created on Mon Sep  7 10:51:38 2015</p>
 <p>&#64;author: oliver</p>
 <dl class="class">
-<dt id="b_splines_interface.characteristic_line">
-<em class="property">class </em><code class="descclassname">b_splines_interface.</code><code class="descname">characteristic_line</code><span class="sig-paren">(</span><em>filename</em>, <em>tst=False</em><span class="sig-paren">)</span><a class="headerlink" href="#b_splines_interface.characteristic_line" title="Permalink to this definition">¶</a></dt>
+<dt id="mubojoints.MBSjoint">
+<em class="property">class </em><code class="descclassname">mubojoints.</code><code class="descname">MBSjoint</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="headerlink" href="#mubojoints.MBSjoint" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class representing a joint.</p>
+</dd></dl>
+
+</div>
+<span class="target" id="module-dbconnect"></span><div class="section" id="code-for-connecting-to-a-sqlite-database">
+<h2>Code for connecting to a sqlite database<a class="headerlink" href="#code-for-connecting-to-a-sqlite-database" title="Permalink to this headline">¶</a></h2>
+<p>Created on Mon Jan 19 08:34:00 2015</p>
+<p>&#64;author: oliver</p>
+</div>
+<span class="target" id="module-interp1d_interface"></span><div class="section" id="code-for-use-of-spline-interpolation">
+<h2>Code for use of Spline-Interpolation<a class="headerlink" href="#code-for-use-of-spline-interpolation" title="Permalink to this headline">¶</a></h2>
+<p>Created on Sat May 16 18:33:20 2015</p>
+<p>&#64;author: oliver</p>
+<dl class="class">
+<dt id="interp1d_interface.interp">
+<em class="property">class </em><code class="descclassname">interp1d_interface.</code><code class="descname">interp</code><span class="sig-paren">(</span><em>filename</em>, <em>tst=False</em><span class="sig-paren">)</span><a class="headerlink" href="#interp1d_interface.interp" title="Permalink to this definition">¶</a></dt>
 <dd><p>The main connection between an external force characterized by a number of points and the mubosym
 After running the initialization the base-functions are setup (by means of optimized coefficients)</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -521,72 +590,16 @@ After running the initialization the base-functions are setup (by means of optim
 </tr>
 </tbody>
 </table>
-<dl class="method">
-<dt id="b_splines_interface.characteristic_line.myfunc">
-<code class="descname">myfunc</code><span class="sig-paren">(</span><em>xx</em><span class="sig-paren">)</span><a class="headerlink" href="#b_splines_interface.characteristic_line.myfunc" title="Permalink to this definition">¶</a></dt>
-<dd><p>The lambdified force expression after optimizing the coefficients</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>xx</strong> &#8211; the distance between two bodies (or markers)</td>
-</tr>
-</tbody>
-</table>
 </dd></dl>
 
-<dl class="method">
-<dt id="b_splines_interface.characteristic_line.myfunc_0">
-<code class="descname">myfunc_0</code><span class="sig-paren">(</span><em>arg</em><span class="sig-paren">)</span><a class="headerlink" href="#b_splines_interface.characteristic_line.myfunc_0" title="Permalink to this definition">¶</a></dt>
-<dd><p>The analytic force expression after optimizing the coefficients</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>xx</strong> &#8211; the distance between two bodies (or markers)</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="function">
-<dt id="b_splines_interface.create_knots">
-<code class="descclassname">b_splines_interface.</code><code class="descname">create_knots</code><span class="sig-paren">(</span><em>a</em>, <em>b</em>, <em>n</em>, <em>p</em><span class="sig-paren">)</span><a class="headerlink" href="#b_splines_interface.create_knots" title="Permalink to this definition">¶</a></dt>
-<dd><p>Function to create knots for b-spline basis startup. The distribution on the edges are crucial for the behaviour.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>a</strong> &#8211; the left edge</li>
-<li><strong>b</strong> &#8211; the right edge</li>
-<li><strong>n</strong> &#8211; the total number of knots</li>
-<li><strong>p</strong> &#8211; the number of edge knots, the rest is distributed uniformly</li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="b_splines_interface.f11">
-<code class="descclassname">b_splines_interface.</code><code class="descname">f11</code><span class="sig-paren">(</span><em>xx</em><span class="sig-paren">)</span><a class="headerlink" href="#b_splines_interface.f11" title="Permalink to this definition">¶</a></dt>
-<dd><p>Example of a analytic expression replacing the external point number</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>xx</strong> &#8211; the distance between two bodies (or markers)</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<span class="target" id="module-one_body_force_model_interface"></span><div class="section" id="one-body-force-model">
-<h2>one_body_force_model<a class="headerlink" href="#one-body-force-model" title="Permalink to this headline">¶</a></h2>
+</div>
+<span class="target" id="module-symTools"></span><div class="section" id="helper-code-to-convert-strings-in-symbolic-expression-and-vv">
+<h2>Helper Code to convert strings in symbolic expression and vv<a class="headerlink" href="#helper-code-to-convert-strings-in-symbolic-expression-and-vv" title="Permalink to this headline">¶</a></h2>
+<p>Created on Mon Jul 20 17:52:06 2015</p>
+<p>&#64;author: oliver</p>
+</div>
+<span class="target" id="module-one_body_force_model_interface"></span><div class="section" id="external-model-connection-general-description">
+<h2>External model connection: general description<a class="headerlink" href="#external-model-connection-general-description" title="Permalink to this headline">¶</a></h2>
 <p>Created on Wed May 27 18:02:53 2015</p>
 <p>&#64;author: oliver</p>
 <dl class="class">
@@ -643,8 +656,8 @@ Output is the force/toque via the model calc-function the nested input for the c
 </dd></dl>
 
 </div>
-<span class="target" id="module-simple_tire_model_interface"></span><div class="section" id="simple-tire-model-interface">
-<h2>simple_tire_model_interface<a class="headerlink" href="#simple-tire-model-interface" title="Permalink to this headline">¶</a></h2>
+<span class="target" id="module-simple_tire_model_interface"></span><div class="section" id="external-tire-model-interface-based-on-pacejka-model">
+<h2>External tire model interface (based on Pacejka Model)<a class="headerlink" href="#external-tire-model-interface-based-on-pacejka-model" title="Permalink to this headline">¶</a></h2>
 <p>Created on Wed May 27 18:02:53 2015</p>
 <p>&#64;author: oliver</p>
 <dl class="function">
@@ -761,7 +774,9 @@ the trafos must be explicitely set via set_coordinate_trafo called from MBSCore 
 </dd></dl>
 
 </div>
-<span class="target" id="module-vpython_3d"></span><p>Created on Fri Apr  3 16:20:11 2015</p>
+<span class="target" id="module-vpython_3d"></span><div class="section" id="vpython-connection-code-for-animation">
+<h2>Vpython connection code for animation<a class="headerlink" href="#vpython-connection-code-for-animation" title="Permalink to this headline">¶</a></h2>
+<p>Created on Fri Apr  3 16:20:11 2015</p>
 <p>&#64;author: oliver</p>
 <dl class="class">
 <dt id="vpython_3d.BoxObject">
@@ -963,17 +978,26 @@ the trafos must be explicitely set via set_coordinate_trafo called from MBSCore 
 
 <dl class="class">
 <dt id="vpython_3d.animation">
-<em class="property">class </em><code class="descclassname">vpython_3d.</code><code class="descname">animation</code><span class="sig-paren">(</span><em>scale</em><span class="sig-paren">)</span><a class="headerlink" href="#vpython_3d.animation" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">vpython_3d.</code><code class="descname">animation</code><span class="sig-paren">(</span><em>scale=20.0</em><span class="sig-paren">)</span><a class="headerlink" href="#vpython_3d.animation" title="Permalink to this definition">¶</a></dt>
+<dd><p>this is the main visualization class</p>
+<p>trying to tidy up global game_objects, all_labels....</p>
+<dl class="method">
+<dt id="vpython_3d.animation.s_animation">
+<code class="descname">s_animation</code><span class="sig-paren">(</span><em>state_vec</em>, <em>orient_vec</em>, <em>con_vec</em>, <em>con_type</em>, <em>bodies_in_graphics</em>, <em>txt_vec</em>, <em>dt</em>, <em>end</em>, <em>speed_factor</em>, <em>p=20.0</em>, <em>labels=True</em>, <em>center=-1</em><span class="sig-paren">)</span><a class="headerlink" href="#vpython_3d.animation.s_animation" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>state_vec</strong> &#8211; </li>
-<li><strong>con_vec</strong> &#8211; </li>
-<li><strong>con_type</strong> &#8211; </li>
-<li><strong>txt_vec</strong> &#8211; </li>
-<li><strong>dt</strong> &#8211; </li>
+<li><strong>state_vec</strong> &#8211; 3 coordinates each body</li>
+<li><strong>orient_vec</strong> &#8211; orientation vector</li>
+<li><strong>con_vec</strong> &#8211; connection vector</li>
+<li><strong>con_type</strong> &#8211; connection type</li>
+<li><strong>bodies_in_graphics</strong> &#8211; dictionary of bodies types</li>
+<li><strong>txt_vec</strong> &#8211; text vector for labels</li>
+<li><strong>dt</strong> &#8211; time step increment</li>
+<li><strong>end</strong> &#8211; stop mark for visualization</li>
+<li><strong>speed_factor</strong> &#8211; factor scale dt, time step increment</li>
 </ul>
 </td>
 </tr>
@@ -994,6 +1018,87 @@ the trafos must be explicitely set via set_coordinate_trafo called from MBSCore 
 </table>
 </dd></dl>
 
+<dl class="method">
+<dt id="vpython_3d.animation.set_dynamic_frame">
+<code class="descname">set_dynamic_frame</code><span class="sig-paren">(</span><em>frame_vec</em><span class="sig-paren">)</span><a class="headerlink" href="#vpython_3d.animation.set_dynamic_frame" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>frame_vec</strong> &#8211; vector containing informations for dynamic frame</td>
+</tr>
+</tbody>
+</table>
+<p>0,1,2 origin
+3,4,5 first elementary axis
+6,7,8 second...
+9,10,11 third...</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="vpython_3d.animation.set_force">
+<code class="descname">set_force</code><span class="sig-paren">(</span><em>force</em>, <em>scale=0.1</em>, <em>f_min=0.1</em>, <em>f_max=10.0</em><span class="sig-paren">)</span><a class="headerlink" href="#vpython_3d.animation.set_force" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>force</strong> &#8211; 3*2 states force</li>
+<li><strong>scale</strong> &#8211; scaling in velocity</li>
+<li><strong>f_min</strong> &#8211; minimal magnitude of force</li>
+<li><strong>f_max</strong> &#8211; maximal magnitude of force</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="vpython_3d.animation.set_stationary_frame">
+<code class="descname">set_stationary_frame</code><span class="sig-paren">(</span><em>mf</em><span class="sig-paren">)</span><a class="headerlink" href="#vpython_3d.animation.set_stationary_frame" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>mf</strong> &#8211; stationary frames</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="vpython_3d.animation.set_stationary_vectors">
+<code class="descname">set_stationary_vectors</code><span class="sig-paren">(</span><em>vs</em><span class="sig-paren">)</span><a class="headerlink" href="#vpython_3d.animation.set_stationary_vectors" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>vs</strong> &#8211; stationary vectors</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="vpython_3d.animation.start">
+<code class="descname">start</code><span class="sig-paren">(</span><em>end</em>, <em>speed_factor</em><span class="sig-paren">)</span><a class="headerlink" href="#vpython_3d.animation.start" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>end</strong> &#8211; end of visualization, should be less or equal then integration frame end.</li>
+<li><strong>speed_factor</strong> &#8211; factor for visualization speed</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
 <dl class="class">
 <dt id="vpython_3d.myLabel">
 <em class="property">class </em><code class="descclassname">vpython_3d.</code><code class="descname">myLabel</code><span class="sig-paren">(</span><em>txt_vec</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#vpython_3d.myLabel" title="Permalink to this definition">¶</a></dt>
@@ -1005,6 +1110,7 @@ the trafos must be explicitely set via set_coordinate_trafo called from MBSCore 
 
 </dd></dl>
 
+</div>
 </div>
 <div class="section" id="indices-and-tables">
 <h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
@@ -1024,9 +1130,14 @@ the trafos must be explicitely set via set_coordinate_trafo called from MBSCore 
   <h3><a href="#">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">Welcome to mubosym&#8217;s documentation!</a><ul>
-<li><a class="reference internal" href="#all-mubosym-related-core-classes">all mubosym related core classes</a></li>
-<li><a class="reference internal" href="#one-body-force-model">one_body_force_model</a></li>
-<li><a class="reference internal" href="#simple-tire-model-interface">simple_tire_model_interface</a></li>
+<li><a class="reference internal" href="#all-mubosym-related-core-classes">All mubosym related core classes</a></li>
+<li><a class="reference internal" href="#joint-related-code">Joint related code</a></li>
+<li><a class="reference internal" href="#code-for-connecting-to-a-sqlite-database">Code for connecting to a sqlite database</a></li>
+<li><a class="reference internal" href="#code-for-use-of-spline-interpolation">Code for use of Spline-Interpolation</a></li>
+<li><a class="reference internal" href="#helper-code-to-convert-strings-in-symbolic-expression-and-vv">Helper Code to convert strings in symbolic expression and vv</a></li>
+<li><a class="reference internal" href="#external-model-connection-general-description">External model connection: general description</a></li>
+<li><a class="reference internal" href="#external-tire-model-interface-based-on-pacejka-model">External tire model interface (based on Pacejka Model)</a></li>
+<li><a class="reference internal" href="#vpython-connection-code-for-animation">Vpython connection code for animation</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>

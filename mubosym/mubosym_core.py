@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-all mubosym related core classes
+All mubosym related core classes
 ================================
 Created on Sun Mar  8 11:50:46 2015
 
@@ -23,7 +23,8 @@ from sympy.solvers import solve as sp_solve
 
 #Vector.simp = True
 
-from numpy import array, hstack, vstack, ones, zeros, linspace, pi, sqrt
+from numpy import array, hstack, vstack, ones, zeros, linspace, pi
+from numpy import sqrt as np_sqrt
 from numpy.linalg import eig
 from numpy.linalg import solve as np_solve
 from scipy.linalg import solve as sc_solve #, lu_solve
@@ -31,6 +32,7 @@ from scipy.linalg import solve as sc_solve #, lu_solve
 from scipy.integrate import ode, odeint
 
 import mubosym as mbs
+import mubojoints as joints
 
 from matplotlib import pyplot as plt
 #########################################
@@ -225,6 +227,21 @@ class MBSbody(object):
         return self.small_angles
             
 class MBScontrolSignal(object):
+    """
+    Class representing control signals. Can be created by any expression. 
+    The user can generate expression via the body-functions: x(), y(), z() ... 
+    The bodies can be retrieved by myMBS.get_body(name). After the generation of an expression
+    it can be put into a control-signal object, by this it is calculated automatically at every time-step.    
+    The signal can be used any time during the solver process via the function myMBS.get_control_signal(channel-number)
+    The channel-number is up-counted automatically at the instance of creation.
+    
+    The signals can be plotted after calculatiot by use of myMBS.plotting(t_max, dt, plots='signals').
+    
+    Dev-Notes: Signals are not stored at the moment. (will be changed soon).
+    :param expr: the signal expression (can include all generalized coordinates)
+    :param name: the signals name
+    :param unit: the signals unit
+    """
     def __init__(self, expr, name, unit):
         self.name = name
         self.expr = expr
@@ -246,6 +263,12 @@ class MBScontrolSignal(object):
         return self.value
         
 class MBSmarker(object):
+    """
+    Class representing marker. Marker can be produced in relation to a fixed body frame.
+    Marker are added via the function myMBS.add_marker(...).
+    
+    Dev-Notes: Since it is a frame it can be derived from a MBSframe in the future
+    """
     def __init__(self, name, frame, body_name):
         self.name = name
         self.frame = frame
@@ -282,6 +305,16 @@ class MBSmarker(object):
         self.frame.set_dicts(dicts)
 
 class MBSparameter(object):
+    """
+    Class representing parameters, as a control possibility of forces, torques and moving frames.
+    Since in moving frames it happens that first and second derivatives coming up in the equations of motion we 
+    need functions for all three, including symbols for all three.
+    Parameters can be added to the world by use of the function myMBS.add_parameters().
+    
+    Therein the name which is the hook for the user and either three python functions are set or an analytic sympy-expression.
+    
+    Dev-Notes: is diff_dict here as parameter necessary ??
+    """
     def __init__(self, name, sym, sym_dt, sym_ddt, func, func_dt, func_ddt, diff_dict, const = 0.):
         self.name = name
         self.sym = sym
@@ -308,167 +341,7 @@ class MBSmodel(object):
     def add_signal(self, expr):
         self.ref.add_signal(expr)
 
-class MBSjoint(object):
-    def __init__(self, name):
-        self.name = name
-        self.x, self.y, self.z = symbols('x y z')
-        self.phi, self.theta, self.psi = symbols('phi theta psi')
-        self.rot_order = [self.phi, self.theta, self.psi]
-        self.trans = [self.x, self.y, self.z]
-        self.rot_frame = 0
-        self.trans_frame = 0
-        self.free_list = []
-        self.const_list = []
-        self.correspondence = {self.phi: 'X', self.theta: 'Y', self.psi: 'Z'}
-        self.c_string = 'XYZ'
-        self.n_free = 0
-    def define_rot_order(self, order):
-        self.rot_order = order
-        self.c_string = ''
-        for s in self.rot_order:
-            self.c_string += self.correspondence[s]
-    def define_freedoms(self, free_list):
-        self.free_list = free_list
-        self.n_free = len(free_list)
-    def define_constants(self, const_list):
-        self.const_list = const_list
-        
-##########################################################################
-# define useful joints here ...       
-joints = []
 
-joints.append(MBSjoint('rod-1-cardanic-efficient'))
-joints[-1].define_freedoms([joints[-1].psi])
-joints[-1].define_constants([joints[-1].y, joints[-1].theta])
-joints[-1].trans_frame = 1
-joints[-1].rot_frame = 0
-
-joints.append(MBSjoint('rod-1-cardanic'))
-joints[-1].define_freedoms([joints[-1].psi])
-joints[-1].define_constants([joints[-1].y, joints[-1].theta])
-joints[-1].trans_frame = 1
-joints[-1].rot_frame = 2
-
-joints.append(MBSjoint('x-axes'))
-joints[-1].define_freedoms([joints[-1].x])
-joints[-1].define_constants([])
-joints[-1].trans_frame = 1
-joints[-1].rot_frame = 2
-
-joints.append(MBSjoint('y-axes'))
-joints[-1].define_freedoms([joints[-1].y])
-joints[-1].define_constants([])
-joints[-1].trans_frame = 1
-joints[-1].rot_frame = 2
-
-joints.append(MBSjoint('z-axes'))
-joints[-1].define_freedoms([joints[-1].z])
-joints[-1].define_constants([])
-joints[-1].trans_frame = 1
-joints[-1].rot_frame = 2
-
-joints.append(MBSjoint('angle-rod'))
-joints[-1].define_freedoms([joints[-1].theta])
-joints[-1].define_constants([joints[-1].phi, joints[-1].y])
-joints[-1].define_rot_order([joints[-1].theta, joints[-1].phi, joints[-1].psi])
-joints[-1].trans_frame = 1
-joints[-1].rot_frame = 2
-
-joints.append(MBSjoint('rod-zero-X'))
-joints[-1].define_freedoms([])
-joints[-1].define_constants([joints[-1].x])
-joints[-1].trans_frame = 1
-joints[-1].rot_frame = 2
-
-joints.append(MBSjoint('rod-zero-Y'))
-joints[-1].define_freedoms([])
-joints[-1].define_constants([joints[-1].y])
-joints[-1].trans_frame = 1
-joints[-1].rot_frame = 2
-
-joints.append(MBSjoint('rod-zero-Z'))
-joints[-1].define_freedoms([])
-joints[-1].define_constants([joints[-1].z])
-joints[-1].trans_frame = 1
-joints[-1].rot_frame = 2
-
-joints.append(MBSjoint('rod-1-revolute'))
-joints[-1].define_freedoms([joints[-1].theta])
-joints[-1].define_rot_order([joints[-1].theta, joints[-1].phi, joints[-1].psi])
-joints[-1].define_constants([joints[-1].y])
-joints[-1].trans_frame = 1
-joints[-1].rot_frame = 2
-
-joints.append(MBSjoint('free-3-translate-z-rotate'))
-joints[-1].define_freedoms([joints[-1].theta, joints[-1].x, joints[-1].y, joints[-1].z])
-joints[-1].define_constants([])
-joints[-1].trans_frame = 0
-joints[-1].rot_frame = 2
-
-joints.append(MBSjoint('xz-plane'))
-joints[-1].define_freedoms([joints[-1].x, joints[-1].z])
-joints[-1].define_constants([])
-joints[-1].trans_frame = 0
-joints[-1].rot_frame = 0
-
-joints.append(MBSjoint('xy-plane'))
-joints[-1].define_freedoms([joints[-1].x, joints[-1].y])
-joints[-1].define_constants([])
-joints[-1].trans_frame = 0
-joints[-1].rot_frame = 0
-
-joints.append(MBSjoint('rod-2-cardanic'))
-joints[-1].define_freedoms([joints[-1].psi, joints[-1].theta])
-joints[-1].define_rot_order([joints[-1].psi, joints[-1].theta, joints[-1].phi])
-joints[-1].define_constants([joints[-1].y])
-joints[-1].trans_frame = 1
-joints[-1].rot_frame = 2
-
-joints.append(MBSjoint('rod-2-revolute-scharnier'))
-joints[-1].define_freedoms([joints[-1].theta, joints[-1].phi])
-joints[-1].define_rot_order([joints[-1].theta, joints[-1].phi, joints[-1].psi])
-joints[-1].define_constants([joints[-1].y])
-joints[-1].trans_frame = 1
-joints[-1].rot_frame = 2
-
-joints.append(MBSjoint('free-3-rotate'))
-joints[-1].define_freedoms([joints[-1].phi, joints[-1].theta, joints[-1].psi])
-joints[-1].define_constants([])
-joints[-1].trans_frame = 1
-joints[-1].rot_frame = 2
-
-joints.append(MBSjoint('free-3-translate'))
-joints[-1].define_freedoms([joints[-1].x, joints[-1].y, joints[-1].z])
-joints[-1].define_constants([])
-joints[-1].trans_frame = 0
-joints[-1].rot_frame = 2
-
-joints.append(MBSjoint('revolute-X'))
-joints[-1].define_freedoms([joints[-1].phi])
-joints[-1].define_constants([])
-joints[-1].trans_frame = 1
-joints[-1].rot_frame = 2
-
-joints.append(MBSjoint('revolute-Y'))
-joints[-1].define_freedoms([joints[-1].theta])
-joints[-1].define_constants([])
-joints[-1].trans_frame = 1
-joints[-1].rot_frame = 2
-
-joints.append(MBSjoint('revolute-Z'))
-joints[-1].define_freedoms([joints[-1].psi])
-joints[-1].define_constants([])
-joints[-1].trans_frame = 1
-joints[-1].rot_frame = 2
-
-joints.append(MBSjoint('free-6'))
-joints[-1].define_freedoms([joints[-1].phi, joints[-1].theta, joints[-1].psi, joints[-1].x, joints[-1].y, joints[-1].z])
-joints[-1].define_constants([])
-joints[-1].trans_frame = 0
-joints[-1].rot_frame = 0
-
-joints_names = [oo.name for oo in joints]
-def_joints = dict(zip(joints_names, joints))
 ######################################################################
 
 class MBSio(object):
@@ -913,8 +786,8 @@ class MBSworld(object):
         self.n_body += 1
         n_body = self.n_body  # number of the actual body (starts at 0)
         # create correct number of symbols for the next body
-        if joint in def_joints:
-            jobj = def_joints[joint]
+        if joint in joints.def_joints:
+            jobj = joints.def_joints[joint]
             d_free = jobj.n_free
             joint = 'general'
         else:
@@ -1165,7 +1038,7 @@ class MBSworld(object):
         n, N_fixed_n, _, body = self._interpretation_of_str_m_b(str_m_b)
         m, N_fixed_m, _, _ = self._interpretation_of_str_m_b(str_m_b_ref)
         n_vec = ( v[0] * N_fixed_m.x + v[1] * N_fixed_m.y + v[2] * N_fixed_m.z )
-        self.torques.append((N_fixed_n, n_vec*phi/sqrt(v[0]*v[0]+v[1]*v[1]+v[2]*v[2]) ))
+        self.torques.append((N_fixed_n, n_vec*phi/np_sqrt(v[0]*v[0]+v[1]*v[1]+v[2]*v[2]) ))
         
     def add_parameter_force(self, str_m_b, str_m_b_ref, v, para_name):
         """
@@ -1184,7 +1057,7 @@ class MBSworld(object):
         n, N_fixed_n, _, body = self._interpretation_of_str_m_b(str_m_b)
         m, N_fixed_m, _, _ = self._interpretation_of_str_m_b(str_m_b_ref)
         n_vec = v[0] * N_fixed_m.x + v[1] * N_fixed_m.y + v[2] * N_fixed_m.z
-        self.forces.append((N_fixed_n, n_vec*phi/sqrt(v[0]*v[0]+v[1]*v[1]+v[2]*v[2]) ))
+        self.forces.append((N_fixed_n, n_vec*phi/np_sqrt(v[0]*v[0]+v[1]*v[1]+v[2]*v[2]) ))
 
     def add_one_body_force_model(self, model_name, str_m_b, str_m_b_ref, typ='tire', parameters = []):
         """
@@ -1364,9 +1237,9 @@ class MBSworld(object):
         self.nv = nv = nv.subs({x:x_p, y:y_p, z:z_p})
         C = 1000. * factor
         if is_body:
-            gamma = 2.*sqrt(self.m[n]*C)
+            gamma = 2.*np_sqrt(self.m[n]*C)
         else:
-            gamma = 2.*sqrt(C)
+            gamma = 2.*np_sqrt(C)
         #check for const. forces (e.g. grav) -> Projectiorator ...
         for ii in range(len(self.forces)):
             if self.forces[ii][0] == Pt:
@@ -1707,7 +1580,6 @@ class MBSworld(object):
         arguments = hstack((x,f_t))       # States, input, and parameters
         #lu = factorized(self.M_func(*arguments))
         #dx = lu(self.F_func(*arguments)).T[0]
-
         dx = array(np_solve(self.M_func(*arguments),self.F_func(*arguments))).T[0]
         return dx
 
@@ -1718,16 +1590,28 @@ class MBSworld(object):
             return 0.
 
     def right_hand_side_ode(self, t ,x ):
+        #for filling up order of f_t see kaneify self.dynamics ...
         para = [ pf(t) for oo in self.param_obj for pf in oo.get_func()]
-        f_t = [t] + [fe(t) for fe in self.f_ext_func] + para + \
-        [fi(*x) for fi in f_int_lamb]
-        inp = hstack((x, [t]+para))
+        r_int = [r(*x) for r in self.f_int_lamb]
+        f_int = [self.f_int_func[i](r_int[i]) for i in range(len(r_int))]
+        f_t = [t] + [fe(t) for fe in self.f_ext_func] + para + f_int
+
+        inp = hstack((x, [t] + para))
         for ii in range(self.forces_models_n):
             F_T_model, model_signals = self.f_models_lamb[ii](inp)
             f_t += F_T_model
+        #generate the control signals (to control somewhere else)
+        for oo in self.control_signals_obj:
+            v = oo.calc_signal(x)
+        #checkpoint output
+        if t>self.tau_check:
+            self.tau_check+=0.1
+            print( t )
 
         arguments = hstack((x,f_t))       # States, input, and parameters
-        dx = array(sc_solve(self.M_func(*arguments),self.F_func(*arguments))).T[0]
+        #lu = factorized(self.M_func(*arguments))
+        #dx = lu(self.F_func(*arguments)).T[0]
+        dx = array(np_solve(self.M_func(*arguments),self.F_func(*arguments))).T[0]
         return dx
 
     def res_body_pos_IF(self):
@@ -2085,7 +1969,7 @@ class MBSworld(object):
             n_signals = len(self.control_signals_obj)
             for n in range(n_signals):
                 plt.subplot(n_signals, 1, n+1)
-                lines = plt.plot(self.time, array(self.control_signals_results)[:,n])
+                lines = plt.plot(array(self.control_signals_results)[:,2], array(self.control_signals_results)[:,n])
                 leg = plt.legend(['Signal '+str(n)])
                 lab = plt.xlabel(self.control_signals_obj[n].name+" in "+self.control_signals_obj[n].unit)
             plt.show()  
@@ -2103,14 +1987,6 @@ class MBSworld(object):
         a = a.s_animation(self.state, self.orient, self.con, self.con_type, self.bodies_in_graphics, self.speed, dt, t_ani, time_scale, scale, labels = labels, center = center)
         return a
 
-    def prepare_integrator_pp(self, x0, delta_t):
-        self.ode15s = ode(self.right_hand_side_ode)
-        self.ode15s.set_integrator('lsoda', method='lsoda', min_step = 1e-6, atol = 1e-6, rtol = 1e-5, with_jacobian=False)
-        self.ode15s.set_initial_value(x0, 0.)
-        self.delta_t = delta_t
-    def inte_grate_pp(self):
-        self.ode15s.integrate(self.ode15s.t+self.delta_t)
-        return self.ode15s.y, self.ode15s.t
 
     def inte_grate_full(self, x0, t_max, delta_t, mode = 0, tolerance = 1.0):
         global IF, O, g, t
@@ -2122,15 +1998,16 @@ class MBSworld(object):
         #some int stuff
         if mode == 1:
             ode15s = ode(self.right_hand_side_ode)
-            ode15s.set_integrator('lsoda', min_step = 1e-6, atol = 1e-6, rtol = 1e-7, with_jacobian=False)
+            ode15s.set_integrator('lsoda', min_step = 1e-6, atol = 1e-6, rtol = 1e-5, with_jacobian=False)
+            #ode15s.set_integrator('dop853', atol = 1e-6, rtol = 1e-5 )
             #method = 'bdf'
             ode15s.set_initial_value(x0, 0.)
             self.x_t = x0
-            while ode15s.t < t_max:
+            while ode15s.t < t_max-delta_t:
                 ode15s.integrate(ode15s.t+delta_t)
                 self.x_t = vstack((self.x_t,ode15s.y))
         elif mode == 0:
-            self.x_t = odeint(self.right_hand_side, x0, self.time, args=([0.,0.],) , hmax = 1.0e-1, hmin = 1.0e-7*tolerance, atol = 1e-5*tolerance, rtol = 1e-5*tolerance, mxords = 4, mxordn = 8)
+            self.x_t = odeint(self.right_hand_side, x0, self.time, args=([0.,0.],) , hmax = 1.0e-1, hmin = 1.0e-7, atol = 1e-5*tolerance, rtol = 1e-5*tolerance) #, mxords = 4, mxordn = 8)
 
         end = time.clock()
         print( "end integration ...", end-start )

@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
 """
+Helper Code to convert strings in symbolic expression and vv
+============================================================
+
 Created on Mon Jul 20 17:52:06 2015
 
 @author: oliver

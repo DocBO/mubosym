@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
 """
+Code for connecting to a sqlite database
+========================================
+
 Created on Mon Jan 19 08:34:00 2015
 
-@author: loc_yangtingting
+@author: oliver
 """
 from __future__ import print_function
 import sqlite3
@@ -11,9 +14,10 @@ name = '/Datenmodell.db'
 
 class dbHandler(object):
     def __init__(self, path):
-        '''
+        """
         dbhandler object
-        '''
+        
+        """
         print( "try to open: "+path+name )
         self.conn = sqlite3.connect(path+name)
         self.c = self.conn.cursor()
