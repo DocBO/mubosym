@@ -8,30 +8,10 @@ import os,sys
 import numpy as np
 from vispy import app,gloo,scene,visuals
 from vispy.scene.visuals import create_visual_node
-from vispy.visuals.transforms import STTransform,MatrixTransform
+from vispy.visuals import transforms
 
 #from vispy.io import read_mesh,load_data_file,load_crate
-
 #from vispy.util.transforms import perspective,translate,rotate
-
-
-"""
-This example demonstrates how to create visuals.
-"""
-
-class dummy(scene.visuals.Cube):
-    """
-    creates a custom draft to demonstrate what is not working
-    """
-    def __init__(self,view,x,y,z,face_color,edge_color):
-        scene.visuals.Cube.__init__(self,(x,y,z),color=face_color,edge_color=edge_color,parent=view)
-
-    def trafo(self,x=0.,y=0.,z=0.,angle=0.,al=0.,be=0.,ga=0.):
-        #Not Working
-        self.transform = MatrixTransform()
-        
-        self.transform = self.transform.translate([x,y,z])
-        self.transform = self.transform.rotate(angle,[al,be,ga])
 
 #Volume = create_visual_node(visuals.VolumeVisual)
 
@@ -60,11 +40,101 @@ class dummy(scene.visuals.Cube):
 #SurfacePlot = create_visual_node(visuals.SurfacePlotVisual)
 #Text = create_visual_node(visuals.TextVisual)
 
+class mbFrame(scene.visuals.XYZAxis):
+    """
+    creates a custom Body Frame, a 3D axis for indicating coordinate system orientation. Axes are x=red, y=green, z=blue.
+        create_visual_node(visuals.XYZAxisVisual)
+
+    maybee this will become the subvisual in every mbVisual
+
+    :param view: the view as obtained by call to e.g. scene.SceneCanvas().central_widget.add_view()
+
+    """
+    def __init__(self,view,*args, **kwargs):
+        super(mbFrame, self).__init__(parent=view,*args, **kwargs)
+        self.transform = transforms.MatrixTransform()
+
+    def trafo(self,x=0.,y=0.,z=0.,angle=0.,al=0.,be=0.,ga=0.):
+
+        self.transform.reset()
+        self.transform.rotate(al, (1, 0, 0))
+        self.transform.rotate(be, (0, 1, 0))
+        self.transform.rotate(ga, (0, 0, 1))
+        self.transform.scale((100, 100, 0.001))
+        self.transform.translate((x, y, z))
+
+class mbCube(scene.visuals.Cube):
+    """
+    creates a custom cube:
+        create_visual_node(visuals.CubeVisual)
+
+    :param view: the view as obtained by call to e.g. scene.SceneCanvas().central_widget.add_view()
+    :param a: first edge lenght (in x direction)
+    :param b: second edge lenght (in y direction)
+    :param c: third edge lenght (in z direction)
+    :param face_color: the faces color
+    :param edge_color: the edge (wire) color
+
+    """
+    def __init__(self,view,a,b,c,face_color,edge_color):
+        super(mbCube,self).__init__((a,b,c),
+                            color=face_color,
+                            edge_color=edge_color,
+                            parent=view)
+        self.transform = transforms.MatrixTransform()
+
+    def trafo(self,x=0.,y=0.,z=0.,angle=0.,al=0.,be=0.,ga=0.):
+
+        self.transform.reset()
+        self.transform.rotate(al, (1, 0, 0))
+        self.transform.rotate(be, (0, 1, 0))
+        self.transform.rotate(ga, (0, 0, 1))
+        self.transform.scale((100, 100, 0.001))
+        self.transform.translate((x, y, z))
+
+class mbSphere(scene.visuals.Sphere):
+    """
+    creates a custom sphere:
+        create_visual_node(visuals.SphereVisual)
+
+    :param view: the view as obtained by call to e.g. scene.SceneCanvas().central_widget.add_view()
+    :param radius: the radius
+    :param face_color: the faces color
+    :param edge_color: the edge (wire) color
+
+
+        #sphere1 = scene.visuals.Sphere(radius=1, method='latitude', parent=view.scene,
+        #                               edge_color='black')
+
+        #sphere2 = scene.visuals.Sphere(radius=1, method='ico', parent=view.scene,
+        #                               edge_color='black')
+
+    """
+    def __init__(self,view,radius,face_color,edge_color):
+        super(mbSphere,self).__init__(radius,
+                            color=face_color,
+                            edge_color=edge_color,
+                            parent=view,
+                            method='ico')
+
+        self.transform = transforms.MatrixTransform()
+
+    def trafo(self,x=0.,y=0.,z=0.,angle=0.,al=0.,be=0.,ga=0.):
+
+        self.transform.reset()
+        self.transform.rotate(al, (1, 0, 0))
+        self.transform.rotate(be, (0, 1, 0))
+        self.transform.rotate(ga, (0, 0, 1))
+        self.transform.scale((100, 100, 0.001))
+        self.transform.translate((x, y, z))
+
 class mbTube(scene.visuals.Tube):
     """
     creates a custom tube:
         create_visual_node(visuals.TubeVisual)
-        
+
+    #TODO abstraction for Cylinder Cone etc...
+
     :param view: the view as obtained by call to e.g. scene.SceneCanvas().central_widget.add_view()
     :param path: An array of (x, y, z) points describing the path along which the tube will be extruded.
     :param radius: the radius
@@ -73,7 +143,7 @@ class mbTube(scene.visuals.Tube):
 
     """
     def __init__(self,view,radius,path,face_color,tube_points=16,closed=True):
-        """        
+        """
         points : ndarray
             An array of (x, y, z) points describing the path along which the
             tube will be extruded.
@@ -101,115 +171,63 @@ class mbTube(scene.visuals.Tube):
         mode : str
             Same as for the `MeshVisual` class. Defaults to 'triangles'.
         """
-        super(mbTube, self).__init__(radius=radius,points=path,color=face_color,tube_points=tube_points,closed=closed,parent=view)
+        super(mbTube, self).__init__(radius=radius,
+                                    points=path,
+                                    color=face_color,
+                                    tube_points=tube_points,
+                                    closed=closed,
+                                    parent=view)
+        self.transform = transforms.MatrixTransform()
 
     def trafo(self,x=0.,y=0.,z=0.,angle=0.,al=0.,be=0.,ga=0.):
-        self.transform = STTransform(translate=[x,y,z])
 
-class mbFrame(scene.visuals.XYZAxis):
-    """
-    creates a custom Body Frame, a 3D axis for indicating coordinate system orientation. Axes are x=red, y=green, z=blue.
-        create_visual_node(visuals.XYZAxisVisual)
+        self.transform.reset()
+        self.transform.rotate(al, (1, 0, 0))
+        self.transform.rotate(be, (0, 1, 0))
+        self.transform.rotate(ga, (0, 0, 1))
+        self.transform.scale((100, 100, 0.001))
+        self.transform.translate((x, y, z))
 
-    maybee this will become the subvisual in every mbVisual
+class Canvas(scene.SceneCanvas):
+    def __init__(self):
+        super(Canvas,self).__init__(keys='interactive',
+                            bgcolor='white',
+                            size=(800, 600),
+                            show=True)
+        self.unfreeze()
+        self.view = self.central_widget.add_view()
+        self.view.camera = 'arcball'
 
-    :param view: the view as obtained by call to e.g. scene.SceneCanvas().central_widget.add_view()
-
-    """
-    def __init__(self,view,*args, **kwargs):
-        super(mbFrame, self).__init__(parent=view,*args, **kwargs)
-
-    def trafo(self,x=0.,y=0.,z=0.,angle=0.,al=0.,be=0.,ga=0.):
-        self.transform = STTransform(translate=[x,y,z])
-
-class mbCube(scene.visuals.Cube):
-    """
-    creates a custom cube:
-        create_visual_node(visuals.CubeVisual)
-
-    :param view: the view as obtained by call to e.g. scene.SceneCanvas().central_widget.add_view()
-    :param a: first edge lenght (in x direction)
-    :param b: second edge lenght (in y direction)
-    :param c: third edge lenght (in z direction)
-    :param face_color: the faces color
-    :param edge_color: the edge (wire) color
-
-    """
-    def __init__(self,view,a,b,c,face_color,edge_color):
-        super(mbCube,self).__init__((a,b,c),color=face_color,edge_color=edge_color,parent=view)
-
-    def trafo(self,x=0.,y=0.,z=0.,angle=0.,al=0.,be=0.,ga=0.):
-        self.transform = STTransform(translate=[x,y,z])
-
-class Cubo(scene.visuals.Cube):
-    """
-    creates a custom draft to demonstrate what is not working
-    """
-    def __init__(self,view,x,y,z,face_color,edge_color):
-        super(Cubo,self).__init__(size=(x,y,z),color=face_color,edge_color=edge_color,parent=view)
+    def setCameraRange(self):
+        self.view.camera.set_range(x=[-3, 3])
 
 
-class mbSphere(scene.visuals.Sphere):
-    """
-    creates a custom sphere:
-        create_visual_node(visuals.SphereVisual)
-
-    :param view: the view as obtained by call to e.g. scene.SceneCanvas().central_widget.add_view()
-    :param radius: the radius
-    :param face_color: the faces color
-    :param edge_color: the edge (wire) color
-
-        
-        #sphere1 = scene.visuals.Sphere(radius=1, method='latitude', parent=view.scene,
-        #                               edge_color='black')
-        
-        #sphere2 = scene.visuals.Sphere(radius=1, method='ico', parent=view.scene,
-        #                               edge_color='black')
-    
-    """
-    def __init__(self,view,radius,face_color,edge_color):
-        super(mbSphere,self).__init__(radius,color=face_color,edge_color=edge_color,parent=view,method='ico')
-
-    def trafo(self,x=0.,y=0.,z=0.,angle=0.,al=0.,be=0.,ga=0.):
-        self.transform = STTransform(translate=[x, y, z])
-
-canvas = scene.SceneCanvas(keys='interactive', bgcolor='white',
-                           size=(800, 600), show=True)
-
-view = canvas.central_widget.add_view()
-view.camera = 'arcball'
-
-body_frame = mbFrame(view.scene)
-
-#cube = dummy(view.scene,2,3,1,'red','black')
-#cube.trafo(x=-0.5,y=1.5)
-
-#view,a,b,c,face_color,edge_color
-
-#cube1 = Cubo(view.scene,2,3,1,'red','black')
-
-cube = mbCube(view.scene,2,3,1,'red','black')
-
-sphere = mbSphere(view.scene,2,'blue','black')
-
-cube.trafo(x=4,y=-2)
-
-cube.trafo(x=-2,y=4)
-#
-sphere.trafo(x=2.5,y=1.,z=2)
-
-
-view.camera.set_range(x=[-3, 3])
 
 if __name__ == '__main__' and sys.flags.interactive == 0:
-    
 
-    
+    canvas = Canvas()
+
+
+    body_frame = mbFrame(canvas.view.scene)
+
+    #cube = dummy(view.scene,2,3,1,'red','black')
+    #cube.trafo(x=-0.5,y=1.5)
+
+    #view,a,b,c,face_color,edge_color
+
+    #cube1 = Cubo(view.scene,2,3,1,'red','black')
+
+    cube = mbCube(canvas.view.scene,2,3,1,'red','black')
+    sphere = mbSphere(canvas.view.scene,2,'blue','black')
+
+    #TODO add tranformations
+
+#    canvas = scene.SceneCanvas(keys='interactive', bgcolor='white',
+#                           size=(800, 600), show=True)
+#view = canvas.central_widget.add_view()
+#view.camera = 'arcball'
+
     canvas.app.run()
-    
-
-    
-    
 
 #__root__ = os.path.realpath(os.path.join(os.path.dirname(__file__),".")) #"../"
 #__icon_path__ = os.path.join(__root__,"mesh")

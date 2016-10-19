@@ -66,12 +66,7 @@ from reportlab.platypus.tableofcontents import TableOfContents
 
 from reportlab.lib.styles import getSampleStyleSheet 
 
-#from reportlab.graphics.shapes import Drawing
-from reportlab.graphics.charts.barcharts import VerticalBarChart, HorizontalBarChart
-from reportlab.graphics import renderPM
 
-from hashlib import sha1
-from reportlab.pdfgen import canvas
 
 from reportlab.rl_config import defaultPageSize
 from reportlab.lib.units import inch
@@ -96,10 +91,109 @@ def myLaterPages(canvas,doc):
     canvas.drawString(inch, 0.75 * inch, "Page %d %s" % (doc.page, pageinfo))
     canvas.restoreState()
 
+class ReportingDocTemplate(BaseDocTemplate):
+    def __init__(self, *args, **kwargs):
+        BaseDocTemplate.__init__(self, *args, **kwargs)
+        self.bottomTableHeight = 0
+        self.bottomTableIsLast = False
+        self.numPages = 0
+        self._lastNumPages = 0
+        self.setProgressCallBack(self._onProgress_cb)
+
+        # For batch reports with several PDFs concatenated
+        self.restartDoc = False
+        self.restartDocIndex = 0
+        self.restartDocPageNumbers = []
+
+    def afterFlowable(self, flowable):
+        self.numPages = max(self.canv.getPageNumber(), self.numPages)
+        self.bottomTableIsLast = False
+
+    #TODO add BottomTable
+        if isinstance(flowable, BottomTable):
+            self.bottomTableHeight = reduce(
+                lambda p, q: p+q,
+                flowable._rowHeights,
+                0)
+
+            self.bottomTableIsLast = True
+
+        elif isinstance(flowable, RestartPageBreak):
+            self.restartDoc = True
+            self.restartDocIndex += 1
+            self.restartDocPageNumbers.append(self.page)
+
+    # here the real hackery starts ... thanks Ralph
+    def _allSatisfied(self):
+        """ Called by multi-build - are all cross-references resolved? """
+        if self._lastNumPages < self.numPages:
+            return 0
+        return BaseDocTemplate._allSatisfied(self)
+
+    def _onProgress_cb(self, what, arg):
+        if what == 'STARTED':
+            self._lastNumPages = self.numPages
+            self.restartDocIndex = 0
+            # self.restartDocPageNumbers = []
+
+    def page_index(self):
+        """
+        Return the current page index as a tuple (current_page, total_pages)
+
+        This is the ugliest thing I've done in the last two years.
+        For this I'll burn in programmer hell.
+
+        At least it is contained here.
+
+        (Determining the total number of pages in reportlab is a mess
+        anyway...)
+        """
+
+        current_page = self.page
+        total_pages = self.numPages
+
+        if self.restartDoc:
+            if self.restartDocIndex:
+                current_page = (
+                    current_page
+                    - self.restartDocPageNumbers[self.restartDocIndex - 1]
+                    + 1)
+                if len(self.restartDocPageNumbers) > self.restartDocIndex:
+                    total_pages = (
+                        self.restartDocPageNumbers[self.restartDocIndex]
+                        - self.restartDocPageNumbers[self.restartDocIndex - 1]
+                        + 1)
+            else:
+                total_pages = self.restartDocPageNumbers[0]
+
+        if self.bottomTableHeight:
+            total_pages -= 1
+
+            if self.bottomTableIsLast and current_page == 1:
+                total_pages = max(1, total_pages)
+
+        # Ensure total pages is always at least 1
+        total_pages = max(1, total_pages)
+
+        return (current_page, total_pages)
+
+    def page_index_string(self):
+        """
+        Return page index string for the footer.
+        """
+        current_page, total_pages = self.page_index()
+
+        return self.PDFDocument.page_index_string(current_page, total_pages)
+
+
+def dummy_stationery(c, doc):
+    pass
+
 class MyDocTemplate(BaseDocTemplate):
     def __init__(self, filename, **kw):
         self.figCount = 0
         self.allowSplitting = 0
+        #TODO fix appy for python3
         apply(BaseDocTemplate.__init__, (self, filename), kw)
         template = PageTemplate('normal', [Frame(2.5*cm, 2.5*cm, 15*cm, 25*cm, id='F1')])
         self.addPageTemplates(template)
@@ -166,12 +260,20 @@ class MyDocTemplate(BaseDocTemplate):
             if level <= 1:
                 key = 'ch%s' % flowable.identity()
                 self.canv.bookmarkPage(key)
-                self.canv.addOutlineEntry(text,
-                                          key, level=level, closed=True)  
+                self.canv.addOutlineEntry(text,key,level=level,closed=True)  
                                         
     def figcounter(self):
         self.figCount += 1
         return str(self.figCount)
+
+class BottomSpacer(Spacer):
+    def wrap(self, availWidth, availHeight):
+        my_height = availHeight - self._doc.bottomTableHeight
+
+        if my_height <= 0:
+            return (self.width, availHeight)
+        else:
+            return (self.width, my_height)
 
 def printl(*args):
     try:

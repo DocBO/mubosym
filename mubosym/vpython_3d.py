@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
 """
+Vpython connection code for animation
+=====================================
+
 Created on Fri Apr  3 16:20:11 2015
 
 @author: oliver
@@ -18,7 +21,7 @@ def get_v_arg(v,n):
 class PointObject(vis.sphere):
     """
     Visual element point object.
-
+            
     :param state_vec: state vector in the order ???
     :param p: scaling factor
     """
@@ -488,8 +491,8 @@ class animation():
 
     def set_dynamic_frame(self, frame_vec):
         """
-
         :param frame_vec: vector containing informations for dynamic frame
+
         0,1,2 origin
         3,4,5 first elementary axis
         6,7,8 second...

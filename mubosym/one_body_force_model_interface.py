@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-one_body_force_model
-====================
+External model connection: general description
+==============================================
+
 Created on Wed May 27 18:02:53 2015
 
 @author: oliver

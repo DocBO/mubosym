@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
 """
+Code for use of Spline-Interpolation
+====================================
+
 Created on Sat May 16 18:33:20 2015
 
 @author: oliver

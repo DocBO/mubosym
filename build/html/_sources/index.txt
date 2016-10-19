@@ -13,8 +13,17 @@ Contents:
 
 .. automodule:: mubosym_core
    :members:
+   
+.. automodule:: mubojoints
+   :members:
 
-.. automodule:: b_splines_interface
+.. automodule:: dbconnect
+   :members:
+   
+.. automodule:: interp1d_interface
+   :members:
+   
+.. automodule:: symTools
    :members:
 
 .. automodule:: one_body_force_model_interface
