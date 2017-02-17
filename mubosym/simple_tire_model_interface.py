@@ -175,7 +175,7 @@ class simple_tire_model():
         
         :param inp: the subset of all possible coord. of one body (see list), here expected as float numbers. The order has to be equal the one in force_lam
         """
-        signals = self.signals_values
+        in_signals = self.signals_values
         [ t, y , x_pt, y_pt, z_pt, omega_z ] = inp
         #print "SSSig: ",signals
         eps = 5.0e-1

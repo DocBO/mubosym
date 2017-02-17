@@ -78,28 +78,57 @@ myMBS.add_force_special('body_car', 'grav')
 #    t, A = symbols('t A')
 #    return (A+0.02*t)*sin(1.0*t)
     
-A = -0.02
-omega = 0.8
-def rotation_inp(t):
-    if t < 10.:
-        return 0.
-    else:
-        return A*np.sin(omega*(t-10.))
-    
-def rotation_inp_diff(t):
-    if t < 10.:
-        return 0.
-    else:
-        return A*omega*np.cos(omega*(t-10.))
-
-def rotation_inp_diff_2(t):
-    if t < 10.:
-        return 0.
-    else:
-        return -A*omega*omega*np.sin(omega*(t-10.))
+#A = -0.02
+#omega = 0.8
+#def rotation_inp(t):
+#    if t < 10.:
+#        return 0.
+#    else:
+#        return A*np.sin(omega*(t-10.))
+#    
+#def rotation_inp_diff(t):
+#    if t < 10.:
+#        return 0.
+#    else:
+#        return A*omega*np.cos(omega*(t-10.))
+#
+#def rotation_inp_diff_2(t):
+#    if t < 10.:
+#        return 0.
+#    else:
+#        return -A*omega*omega*np.sin(omega*(t-10.))
 
 ###################################
+# steering controller
+name = mbs.DATA_PATH+'/line_01.dat'
+kst = interp_dl(filename = name)
 
+@mbs.static_vars(t_p=0, dist_p=0, tau=0, phi_out=0., phi_int=0., n=0)
+def rotation_inp(t):
+    bz = myMBS.get_control_signal(1)
+    bx = myMBS.get_control_signal(2)
+    vz = myMBS.get_control_signal(3)
+    vx = myMBS.get_control_signal(4)
+    delt = (t-rotation_inp.t_p)
+    if delt > 0.05: #0.1
+        rotation_inp.tau, x, z, dist = kst.distance((bx,bz), rotation_inp.tau)
+        t_diff = kst.tang_diff((vx,vz), rotation_inp.tau)
+        #dist = (rotation_inp.dist_p *0.1 + dist* delt) / (delt + 0.1) 
+        rotation_inp.t_p = t
+        #rotation_inp.dist_p = dist
+        rotation_inp.phi_int -= dist*1.0e-3
+        rotation_inp.phi_out = t_diff*1.0e-2 + rotation_inp.phi_int - dist*5.0e-3
+        if rotation_inp.phi_out > 0.12:
+            rotation_inp.phi_out = 0.12
+        elif rotation_inp.phi_out < -0.12:
+            rotation_inp.phi_out = -0.12
+            
+        print t, delt, rotation_inp.phi_out, dist, t_diff
+        #rotation_inp.n += 1
+        #if rotation_inp.n > 20:
+        #    rotation_inp.phi_int = 0.
+    return rotation_inp.phi_out
+    #return A*np.sin(omega*t)
 
 def zero(t):
     return 0.
