@@ -245,77 +245,7 @@ if __name__ == '__main__' and sys.flags.interactive == 0:
 #    Z = np.row_stack(grid_num // 2 * (row_even, row_odd)).astype(np.uint8)
 #    return 255 * Z.repeat(grid_size, axis=0).repeat(grid_size, axis=1)
 #
-#class Canvas(scene.SceneCanvas):
-#    def __init__(self,name):
-#        scene.SceneCanvas.__init__(self,title=name,bgcolor='white',size=(512, 512),keys='interactive',show=True)
-#
-#        self.timer = app.Timer('auto', self.on_timer)
-#
-#        # Build view, model, projection & normal
-#        self.view = self.central_widget.add_view()
-#        self.view.camera = 'arcball'
-#
-#        self.myc = mbCube(self.view)
-#
-#        self.view.camera.set_range(x=[-3, 3])
-#
-#        self.init_transforms()
-#
-#        self.timer.start()
-#
-#        self.show()
-#
-#    def on_draw(self, event):
-#        gloo.clear(color=True, depth=True)
-#        #self.program.draw('triangles', self.indices)
-#        self.draw()
-#
-#
-#    def on_resize(self, event):
-#        self.activate_zoom()
-#
-#    def activate_zoom(self):
-#        gloo.set_viewport(0, 0, *self.physical_size)
-#        #projection = perspective(45.0, self.size[0] / float(self.size[1]),2.0, 10.0)
-#        #self.program['projection'] = projection
-##
-#    def on_timer(self, event):
-#        self.theta += .5
-#        self.phi += .5
-#        #self.myc.
-#        #self.myc['u_model'] = np.dot(rotate(self.theta, (0, 0, 1)),
-#                                       #rotate(self.phi, (0, 1, 0)))
-#        self.update()
-#
-#    def init_transforms(self):
-#        self.view       = np.eye(4,dtype=np.float32)
-#        self.model      = np.eye(4,dtype=np.float32)
-#        self.projection = np.eye(4,dtype=np.float32)
-#
-#        self.theta = 0
-#        self.phi = 0
-#
-#        self.myc.transform = STTransform(translate=[-2.5, 0, 0])
-#
-#        #translate(self.view, )
-#        #self.myc['u_model'] = self.model
-#        #self.myc['u_view'] = self.view
-#
-#    def update_transforms(self,event):
-#        self.theta += .5
-#        self.phi += .5
-#        self.model = np.eye(4, dtype=np.float32)
-#        rotate(self.model, self.theta, 0,0,1)
-#        rotate(self.model, self.phi,   0,1,0)
-#        #self.program['u_model'] = self.model
-#        self.update()
-#
-#
-#if __name__ == '__main__' and sys.flags.interactive == 0:
-#
-#    c = Canvas('test')
-#    c.show()
-#    c.app.run()
+
 
 ## Things to learn
 ##myapp = app.Application()
