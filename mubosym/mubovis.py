@@ -8,7 +8,7 @@ import os,sys
 import numpy as np
 from vispy import app,gloo,scene,visuals
 from vispy.scene.visuals import create_visual_node
-from vispy.visuals.transforms import STTransform,MatrixTransform
+from vispy.visuals.transforms import STTransform, MatrixTransform
 
 #from vispy.io import read_mesh,load_data_file,load_crate
 
@@ -24,7 +24,8 @@ class dummy(scene.visuals.Cube):
     creates a custom draft to demonstrate what is not working
     """
     def __init__(self,view,x,y,z,face_color,edge_color):
-        scene.visuals.Cube.__init__(self,(x,y,z),color=face_color,edge_color=edge_color,parent=view)
+        #scene.visuals.Cube.__init__(self,(x,y,z),color=face_color,edge_color=edge_color,parent=view)
+        super(dummy, self).__init__((x,y,z),color=face_color,edge_color=edge_color,parent=view)
 
     def trafo(self,x=0.,y=0.,z=0.,angle=0.,al=0.,be=0.,ga=0.):
         #Not Working
@@ -173,38 +174,63 @@ class mbSphere(scene.visuals.Sphere):
     def trafo(self,x=0.,y=0.,z=0.,angle=0.,al=0.,be=0.,ga=0.):
         self.transform = STTransform(translate=[x, y, z])
 
-canvas = scene.SceneCanvas(keys='interactive', bgcolor='white',
+
+class mbsCanvas(scene.SceneCanvas):
+    def __init__(self):
+        super(mbsCanvas, self).__init__( keys='interactive', bgcolor='white',
                            size=(800, 600), show=True)
 
-view = canvas.central_widget.add_view()
-view.camera = 'arcball'
+        self.unfreeze()
+        self.tt = 0.
+        self.timer = app.Timer(interval=1e-3) #or use 'auto'
+        #print(timer.interval)
+        self.timer.connect(self.on_timer)
+        self.timer.start(0)
+        
+        #adds a viewbox to the canvas-central-widget
+        self.view = self.central_widget.add_view()
+        #call the setter for the camera
+        self.view.camera = 'arcball'
+    
+        self.view.camera.set_range(x=[-6, 6])
 
-body_frame = mbFrame(view.scene)
+    # ---------------------------------
+    def on_key_press(self, event):
+        """
+        is included in the canvas. here used to start/stop the animation loop
+        """
+        if event.text == ' ':
+            if self.timer.running:
+                self.timer.stop()
+            else:
+                self.timer.start()
 
-#cube = dummy(view.scene,2,3,1,'red','black')
-#cube.trafo(x=-0.5,y=1.5)
+    def on_mouse_press(self, event):
+        print(event.pos)
 
-#view,a,b,c,face_color,edge_color
-
-#cube1 = Cubo(view.scene,2,3,1,'red','black')
-
-cube = mbCube(view.scene,2,3,1,'red','black')
-
-sphere = mbSphere(view.scene,2,'blue','black')
-
-cube.trafo(x=4,y=-2)
-
-cube.trafo(x=-2,y=4)
-#
-sphere.trafo(x=2.5,y=1.,z=2)
-
-
-view.camera.set_range(x=[-3, 3])
+    # ---------------------------------
+    def on_timer(self, event):
+        """
+        the update frame function, for physical processes must consider the global time
+        
+        called with interval if possible or mostly in arbitrary time steps
+        """
+        self.tt += event.dt
+        cube.trafo(x=self.tt,y=0.)
+        # the following is not clear:        
+        # self.update()
+    
 
 if __name__ == '__main__' and sys.flags.interactive == 0:
-    
+    canvas = mbsCanvas() 
+
+
+    body_frame = mbFrame(canvas.view.scene)
+    cube = mbCube(canvas.view.scene,2,3,1,'red','black')
+    sphere = mbSphere(canvas.view.scene,2,'blue','black')
 
     
+
     canvas.app.run()
     
 
@@ -227,77 +253,7 @@ if __name__ == '__main__' and sys.flags.interactive == 0:
 #    Z = np.row_stack(grid_num // 2 * (row_even, row_odd)).astype(np.uint8)
 #    return 255 * Z.repeat(grid_size, axis=0).repeat(grid_size, axis=1)
 #
-#class Canvas(scene.SceneCanvas):
-#    def __init__(self,name):
-#        scene.SceneCanvas.__init__(self,title=name,bgcolor='white',size=(512, 512),keys='interactive',show=True)
-#
-#        self.timer = app.Timer('auto', self.on_timer)
-#
-#        # Build view, model, projection & normal
-#        self.view = self.central_widget.add_view()
-#        self.view.camera = 'arcball'
-#
-#        self.myc = mbCube(self.view)
-#
-#        self.view.camera.set_range(x=[-3, 3])
-#
-#        self.init_transforms()
-#
-#        self.timer.start()
-#
-#        self.show()
-#
-#    def on_draw(self, event):
-#        gloo.clear(color=True, depth=True)
-#        #self.program.draw('triangles', self.indices)
-#        self.draw()
-#
-#
-#    def on_resize(self, event):
-#        self.activate_zoom()
-#
-#    def activate_zoom(self):
-#        gloo.set_viewport(0, 0, *self.physical_size)
-#        #projection = perspective(45.0, self.size[0] / float(self.size[1]),2.0, 10.0)
-#        #self.program['projection'] = projection
-##
-#    def on_timer(self, event):
-#        self.theta += .5
-#        self.phi += .5
-#        #self.myc.
-#        #self.myc['u_model'] = np.dot(rotate(self.theta, (0, 0, 1)),
-#                                       #rotate(self.phi, (0, 1, 0)))
-#        self.update()
-#
-#    def init_transforms(self):
-#        self.view       = np.eye(4,dtype=np.float32)
-#        self.model      = np.eye(4,dtype=np.float32)
-#        self.projection = np.eye(4,dtype=np.float32)
-#
-#        self.theta = 0
-#        self.phi = 0
-#
-#        self.myc.transform = STTransform(translate=[-2.5, 0, 0])
-#
-#        #translate(self.view, )
-#        #self.myc['u_model'] = self.model
-#        #self.myc['u_view'] = self.view
-#
-#    def update_transforms(self,event):
-#        self.theta += .5
-#        self.phi += .5
-#        self.model = np.eye(4, dtype=np.float32)
-#        rotate(self.model, self.theta, 0,0,1)
-#        rotate(self.model, self.phi,   0,1,0)
-#        #self.program['u_model'] = self.model
-#        self.update()
-#
-#
-#if __name__ == '__main__' and sys.flags.interactive == 0:
-#
-#    c = Canvas('test')
-#    c.show()
-#    c.app.run()
+
 
 ## Things to learn
 ##myapp = app.Application()
