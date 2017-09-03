@@ -91,7 +91,7 @@ myMBS.kaneify()
 myMBS.prep_lambdas(frames_in_graphics, fixed_frames_in_graphics, forces_in_graphics)
 
 
-dt = 0.01  # 10 ms for a nice animation result
+dt = 0.02  # 10 ms for a nice animation result
 t_max = 20.
 
 myMBS.inte_grate_full(x0, t_max, dt, mode = 0, tolerance = 1e+0)

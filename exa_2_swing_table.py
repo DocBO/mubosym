@@ -12,7 +12,7 @@ import mubosym as mbs
 
 ###############################################################
 # general system setup example
-myMBS = mbs.MBSworld('swing_table', connect=True, force_db_setup=False)
+myMBS = mbs.MBSworld('swing_table', connect=False, force_db_setup=False)
 
 
 #prepare a standard

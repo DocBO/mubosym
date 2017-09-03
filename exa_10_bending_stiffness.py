@@ -10,7 +10,7 @@ import mubosym as mbs
 
 ###############################################################
 # general system setup example
-myMBS = mbs.MBSworld('bending_stiffness', connect=True, force_db_setup=False)
+myMBS = mbs.MBSworld('bending_stiffness', connect=False, force_db_setup=False)
 
 #prepare a standard 
 I = [10.,10.,10.]

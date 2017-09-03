@@ -42,7 +42,10 @@ from one_body_force_model_interface import one_body_force_model
 from simple_tire_model_interface import simple_tire_model
 
 ### Imports always on top...
-from vpython_3d import animation
+try:
+    from mubovis import animation
+except:
+    from vpython_3d import animation
 
 class ParameterError(Exception):
     """
@@ -1383,6 +1386,7 @@ class MBSworld(object):
         #myn = -alpha*nv
         C_inf = 10.0 * factor
         proj_force = - C_inf * self.m[n]*d_c2.diff(t)*nv #- self.m[n]*acc.dot(nv)*nv
+        #print("PROJECTION FORCE: ", proj_force)
         #self.forces.append((Pt, myn))
         self.forces.append((Pt, proj_force))
 
@@ -1492,7 +1496,7 @@ class MBSworld(object):
         self.kane = KanesMethod(IF, q_ind=self.q_flat, u_ind=self.u_flat,
                                 q_dependent = q_dep, u_dependent = u_dep, configuration_constraints = c_cons,
                                 velocity_constraints = u_cons, kd_eqs=self.kindiffs)
-        self.fr, self.frstar = self.kane.kanes_equations(self.forces+self.torques, self.particles)
+        self.fr, self.frstar = self.kane.kanes_equations(self.particles, self.forces+self.torques)
         #print u_cons
         self.A, self.B, self.inp_vec = self.kane.linearize(op_point=x_op, A_and_B=True,
                                      new_method=True, simplify =True)
@@ -1595,7 +1599,7 @@ class MBSworld(object):
         else:
             print( "calc further (subs)..." )
             self.kane = KanesMethod(IF, q_ind=self.q_flat, u_ind=self.u_flat, kd_eqs=self.kindiffs)
-            self.fr, self.frstar = self.kane.kanes_equations(self.forces+self.torques, self.particles)
+            self.fr, self.frstar = self.kane.kanes_equations(self.particles, self.forces+self.torques )
             self.kindiff_dict = self.kane.kindiffdict()
             self.M = self.kane.mass_matrix_full.subs(self.kindiff_dict)   # Substitute into the mass matrix
 
@@ -1669,9 +1673,11 @@ class MBSworld(object):
             
         nums = self.bodies.values()
         #print(nums, type(nums))
-        #nums.sort()
-        for n in sorted(list(nums)[:-1]):
+        #print(sorted(list(nums)))
+
+        for n in sorted(list(nums))[0:-1]:
             self.body_list_sorted.append([oo for oo in self.bodies_obj.values() if oo.get_n() == n][0])
+        #print("----------",[x.name for x in self.body_list_sorted])
         toc = time.clock()
         #######################################################
         # set all dicts to all frames
@@ -1738,6 +1744,7 @@ class MBSworld(object):
             IF_coords.append( oo.x().subs(self.const_dict) ) #self.get_pt_pos(ii,IF,0).subs(self.const_dict))
             IF_coords.append( oo.y().subs(self.const_dict) ) #self.get_pt_pos(ii,IF,1).subs(self.const_dict))
             IF_coords.append( oo.z().subs(self.const_dict) ) #self.get_pt_pos(ii,IF,2).subs(self.const_dict))
+            print("add body pos IF:",oo.name,IF_coords)
         f_t = [t] + self.parameters
         self.pos_cartesians_lambda = lambdify(self.q_flat+f_t, IF_coords)
 
@@ -1801,12 +1808,32 @@ class MBSworld(object):
         t = self.time
         u = self.x_t[:,self.dof:self.dof*2]
         self.acc = zeros(self.dof)
-        for ti in range(1,len(t)):
+        for ti in range(1,len(t)-1):
             acc_line = []
             for ii in range(self.dof):
-                acc_line = hstack((acc_line,(u[ti][ii]-u[ti-1][ii])/(t[ti]-t[ti-1])))
-            self.acc = vstack((self.acc, acc_line))
+                acc_line = hstack((acc_line,(u[ti+1][ii]-u[ti-1][ii])/(t[ti+1]-t[ti-1])))
             
+            self.acc = vstack((self.acc, acc_line))
+        self.acc = vstack((self.acc, zeros(self.dof)))
+
+
+    def calc_acc_cart(self):
+        t = self.time
+        self.acc_cart = zeros(len(self.body_list_sorted)*3)
+        for ii in range(1,len(t)):
+            tau = t[ii]
+            tau_m = t[ii-1]
+            f_t = [tau] + [ pf(tau) for oo in self.param_obj for pf in oo.get_func()]
+            f_t_m = [tau_m] + [ pf(tau_m) for oo in self.param_obj for pf in oo.get_func()]
+            x_act = hstack((self.x_t[ii,0:self.dof], f_t))
+            x_act_m = hstack((self.x_t[ii-1,0:self.dof], f_t_m))
+            vx = self.pos_cartesians_lambda(*x_act)        #transports x,y,z
+            vx_m = self.pos_cartesians_lambda(*x_act_m)
+            acc_line = []
+            for ii in range(len(vx)):
+                acc_line = hstack((acc_line,(vx[ii]-vx_m[ii])/(tau - tau_m)))
+            self.acc_cart = vstack((self.acc_cart, acc_line))
+            #print(u[ti], self.acc[ti])
      #TODO : new setup of rod forces
 #    def res_rod_forces(self):
 #        self.f_rod = []
@@ -1826,14 +1853,15 @@ class MBSworld(object):
     def res_total_force(self, oo):
         global IF, O, g, t
         res_force = []
-        res_force.append( oo.x() )
-        res_force.append( oo.y() )
-        res_force.append( oo.z() )
-        res_force.append(oo.x_ddt()*oo.mass )
-        res_force.append(oo.y_ddt()*oo.mass )
-        res_force.append(oo.z_ddt()*oo.mass )
+        res_force.append( oo.x().subs(self.const_dict) )
+        res_force.append( oo.y().subs(self.const_dict) )
+        res_force.append( oo.z().subs(self.const_dict) )
+        res_force.append( oo.x_ddt()*oo.mass )
+        res_force.append( oo.y_ddt()*oo.mass )
+        res_force.append( oo.z_ddt()*oo.mass )
 
         f_t = [t] + self.parameters
+        #print("RESFORCES: ", res_force, self.a_flat)
         return lambdify(self.q_flat+self.u_flat+self.a_flat+f_t, res_force)
 
 
@@ -1929,6 +1957,7 @@ class MBSworld(object):
         print( "finished ...",end-start )
 
     def prepare(self, path='', save=True):
+        print(self.x_t[-1])
         #transform back to produce a state vector in IF
         n_body = self.n_body
         self.state = hstack(zeros((n_body+1)*3)) # 3 includes 3d cartesians + 1 time
@@ -1948,9 +1977,11 @@ class MBSworld(object):
         self.model_signals_results = {}
         self.control_signals_results = []
         self.calc_acc()
+        self.calc_acc_cart()
 
         for ii in range(self.forces_models_n):
             self.model_signals_results.update({ii: zeros(self.models[ii].get_signal_length())})
+
 
         for ii in range(len(self.time)):
             tau = self.time[ii]
@@ -1963,8 +1994,8 @@ class MBSworld(object):
             q_flat_u_flat = hstack((self.x_t[ii,0:self.dof*2]))
             x_u_a_act = hstack((self.x_t[ii,0:self.dof*2], self.acc[ii], f_t))
 
-            vx = self.pos_cartesians_lambda(*x_act)        #transports x,y,z
-            orient = self.orient_cartesians_lambda(*x_act) #transports e_x und e_y
+            vx = self.pos_cartesians_lambda(*x_act)         # transports x,y,z
+            orient = self.orient_cartesians_lambda(*x_act)  # transports e_x, e_y, e_z
             vc = self.connections_cartesians_lambda(*x_act)
             for n in range(len(self.vis_frame_coords)):
                 vf = self.vis_frame_coords[n](*x_act)
@@ -2048,6 +2079,15 @@ class MBSworld(object):
             lab = plt.xlabel('Time [sec]')
             leg = plt.legend(["y-Pos."])
 
+        elif plots == 'y-force':
+            n = len(self.q_flat)
+            n_max = int(t_max/dt)-2
+            plt.subplot(2, 1, 1)
+            #lines = plt.plot(self.time[0:n_max], [x[4] for x in self.vis_forces[1][0:n_max]])
+            lines = plt.plot(self.time[0:n_max], [ x[4] for x in self.acc_cart[0:n_max] ] )
+            lab = plt.xlabel('Time [sec]')
+            leg = plt.legend(["y-Force"])
+
             plt.subplot(2, 1, 2)
             lines = plt.plot(self.time, self.e_kin,self.time,self.e_rot,self.time, self.e_pot,self.time, self.e_tot)
             lab = plt.xlabel('Time [sec]')
@@ -2093,6 +2133,7 @@ class MBSworld(object):
 
     def animate(self, t_max, dt, scale = 4, time_scale = 1, t_ani = 30., labels = False, center = -1, f_scale = 0.1, f_min = 0.2, f_max = 5.):
         #stationary vectors:
+        body_names = [x.name for x in self.body_list_sorted]
         a = animation(scale)
         for fr in self.vis_fixed_frames:
             a.set_stationary_frame(fr)
@@ -2101,7 +2142,7 @@ class MBSworld(object):
         for n in range(len(self.vis_force_coords)):
             a.set_force(self.vis_forces[n], f_scale, f_min, f_max)
 
-        a = a.s_animation(self.state, self.orient, self.con, self.con_type, self.bodies_in_graphics, self.speed, dt, t_ani, time_scale, scale, labels = labels, center = center)
+        a = a.start_animation(body_names, self.state, self.orient, self.con, self.con_type, self.bodies_in_graphics, self.speed, dt, t_ani, time_scale, scale, labels = labels, center = center)
         return a
 
     def prepare_integrator_pp(self, x0, delta_t):

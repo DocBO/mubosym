@@ -11,7 +11,7 @@ import mubosym as mbs
 
 ############################################################
 # general system setup example
-myMBS = mbs.MBSworld('moving_pendulum', connect=True, force_db_setup=False)
+myMBS = mbs.MBSworld('moving_pendulum', connect=False, force_db_setup=False)
 
 I = [0.,0.,0.]
 
