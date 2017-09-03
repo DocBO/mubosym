@@ -391,7 +391,7 @@ class animation():
         self.p = scale
         self.center = -1
 
-    def s_animation(self,state_vec,orient_vec,con_vec,con_type,bodies_in_graphics,txt_vec,dt,end,speed_factor,p=20.,labels=True,center=-1):
+    def start_animation(self,body_names, state_vec,orient_vec,con_vec,con_type,bodies_in_graphics,txt_vec,dt,end,speed_factor,p=20.,labels=True,center=-1):
         """
         :param state_vec: 3 coordinates each body
         :param orient_vec: orientation vector
