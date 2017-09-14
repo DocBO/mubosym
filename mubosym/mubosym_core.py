@@ -742,7 +742,7 @@ class MBSworld(object):
         :param str_m_b: the name string of marker or body
         """
         obj = None
-        if self.bodies_obj.has_key(str_m_b):
+        if str_m_b in self.bodies_obj:
             try:
                 obj = body = self.bodies_obj[str_m_b]
                 n = body.get_n()             #self.bodies[str_m_b]
@@ -1532,7 +1532,7 @@ class MBSworld(object):
         ######################################################
             if len(self.n_constr) > 0:
                 self.F = self.F.subs(self.accdiff_dict)
-                i_off = len(self.F)/2
+                i_off = int(len(self.F)/2)
                 for ii in range(i_off):
                     for line in range(i_off):
                         jj = line + i_off
@@ -1591,8 +1591,9 @@ class MBSworld(object):
             oo.lambdify(self.q_flat + self.u_flat)
             
         nums = self.bodies.values()
-        nums.sort()
-        for n in nums[:-1]:
+        #print(nums, type(nums))
+        #nums.sort()
+        for n in sorted(list(nums)[:-1]):
             self.body_list_sorted.append([oo for oo in self.bodies_obj.values() if oo.get_n() == n][0])
         toc = time.clock()
         #######################################################
@@ -1856,7 +1857,7 @@ class MBSworld(object):
 
         end = time.clock()
 
-        for k,v in bodies_in_graphics.iteritems():
+        for k,v in bodies_in_graphics.items():
             n, N_fixed_n, is_body, body = self._interpretation_of_str_m_b(k)
             self.bodies_in_graphics.update({n:v})
         print( "finished ...",end-start )
