@@ -45,7 +45,7 @@ from two_body_force_model_interface import two_body_force_model
 from simple_tire_model_interface import simple_tire_model
 
 ### Imports always on top...
-from vpython_3d import animation
+#from vpython_3d import animation
 
 class ParameterError(Exception):
     """
@@ -226,18 +226,18 @@ class MBSbody(object):
         self.small_angles = angle_list
     def get_small_angles(self):
         return self.small_angles
-            
+
 class MBScontrolSignal(object):
     """
-    Class representing control signals. Can be created by any expression. 
-    The user can generate expression via the body-functions: x(), y(), z() ... 
+    Class representing control signals. Can be created by any expression.
+    The user can generate expression via the body-functions: x(), y(), z() ...
     The bodies can be retrieved by myMBS.get_body(name). After the generation of an expression
-    it can be put into a control-signal object, by this it is calculated automatically at every time-step.    
+    it can be put into a control-signal object, by this it is calculated automatically at every time-step.
     The signal can be used any time during the solver process via the function myMBS.get_control_signal(channel-number)
     The channel-number is up-counted automatically at the instance of creation.
-    
+
     The signals can be plotted after calculatiot by use of myMBS.plotting(t_max, dt, plots='signals').
-    
+
     Dev-Notes: Signals are not stored at the moment. (will be changed soon).
     :param expr: the signal expression (can include all generalized coordinates)
     :param name: the signals name
@@ -250,24 +250,24 @@ class MBScontrolSignal(object):
         self.lamb = None
         self.value = 0.
     def get_expr(self):
-        return self.expr        
+        return self.expr
     def lambdify(self, args):
         self.lamb = lambdify(args, self.expr)
     def get_signal(self, args):
         return self.lamb(*args)
     def subs_dict(self,mdict):
-        self.expr = self.expr.subs(mdict) 
+        self.expr = self.expr.subs(mdict)
     def calc_signal(self, args):
         self.value = self.lamb(*args)
         return self.value
     def get_signal_value(self):
         return self.value
-        
+
 class MBSmarker(object):
     """
     Class representing marker. Marker can be produced in relation to a fixed body frame.
     Marker are added via the function myMBS.add_marker(...).
-    
+
     Dev-Notes: Since it is a frame it can be derived from a MBSframe in the future
     """
     def __init__(self, name, frame, body_name):
@@ -300,7 +300,7 @@ class MBSmarker(object):
     def z_ddt(self):
         return self.frame.pz_ddt()
     ############
-    # TODO: define psi, theta phi output 
+    # TODO: define psi, theta phi output
     #
     def set_dicts(self, dicts):
         self.frame.set_dicts(dicts)
@@ -308,12 +308,12 @@ class MBSmarker(object):
 class MBSparameter(object):
     """
     Class representing parameters, as a control possibility of forces, torques and moving frames.
-    Since in moving frames it happens that first and second derivatives coming up in the equations of motion we 
+    Since in moving frames it happens that first and second derivatives coming up in the equations of motion we
     need functions for all three, including symbols for all three.
     Parameters can be added to the world by use of the function myMBS.add_parameters().
-    
+
     Therein the name which is the hook for the user and either three python functions are set or an analytic sympy-expression.
-    
+
     Dev-Notes: is diff_dict here as parameter necessary ??
     """
     def __init__(self, name, sym, sym_dt, sym_ddt, func, func_dt, func_ddt, diff_dict, const = 0.):
@@ -848,7 +848,7 @@ class MBSworld(object):
             for s in jobj.trans:
                 if not s in jobj.free_list:
                     trans = trans.subs({s:0.})
-            print ("General trans: ",trans)
+            print("General trans: ",trans)
             pos_pt = trans.express(IF, variables = True)+t_frame
         else:
             # we will never get here because we already checked for comleteness
@@ -890,7 +890,7 @@ class MBSworld(object):
 
     def get_model(self, name):
         return self.models_obj[name]
-        
+
     def get_distance(self, str_m_b_i, str_m_b_j ):
         i, N_fixed_i, _, body_i = self._interpretation_of_str_m_b(str_m_b_i)
         j, N_fixed_j, _, body_j = self._interpretation_of_str_m_b(str_m_b_j)
@@ -899,7 +899,7 @@ class MBSworld(object):
         del_z = body_i.z()-body_j.z()
         r = sqrt(del_x*del_x + del_y*del_y + del_z*del_z)
         return r
-        
+
     def add_force(self, str_m_b_i, str_m_b_j, parameters = []):
         """
         Interaction forces between body/marker i and j via spring damper element.
@@ -1049,7 +1049,7 @@ class MBSworld(object):
         m, N_fixed_m, _, _ = self._interpretation_of_str_m_b(str_m_b_ref)
         n_vec = ( v[0] * N_fixed_m.x + v[1] * N_fixed_m.y + v[2] * N_fixed_m.z )
         self.torques.append((N_fixed_n, n_vec*phi/np_sqrt(v[0]*v[0]+v[1]*v[1]+v[2]*v[2]) ))
-        
+
     def add_parameter_force(self, str_m_b, str_m_b_ref, v, para_name):
         """
         Add an external force to a body in the direction v, the abs value is equal the value of the parameter (para_name)
@@ -1129,7 +1129,7 @@ class MBSworld(object):
         torque = self.f_t_models_sym[-3]*N_fixed_m.x + self.f_t_models_sym[-2]*N_fixed_m.y + self.f_t_models_sym[-1]*N_fixed_m.z
         self.forces.append((Pt_n,force))
         self.torques.append((N_fixed_n, torque))
-        
+
     def add_two_body_force_model(self, model_name, str_m_b_n, str_m_b_m, typ='harmonic', parameters = []):
         """
         Add an (external) model force/torque for one body: the force/torque is acting
@@ -1155,9 +1155,9 @@ class MBSworld(object):
         x = -body_n.x()+body_m.x()
         y = -body_n.y()+body_m.y()
         z = -body_n.z()+body_m.z()
-        r_nm = x*IF.x + y*IF.y + z*IF.z        
+        r_nm = x*IF.x + y*IF.y + z*IF.z
         r = sqrt(x*x+y*y+z*z)
-        r_nm_0 = r_nm/(r+1e-5) 
+        r_nm_0 = r_nm/(r+1e-5)
         r_pt = r.diff(t)
 
         #get the model and supply the trafos
@@ -1482,7 +1482,7 @@ class MBSworld(object):
     def kaneify(self, simplify = False):
         global IF, O, g, t
         print( "Assemble the equations of motion ..." )
-        tic = time.clock()
+        tic = time.process_time()
         self.q_flat = [ii for mi in self.q for ii in mi]
         self.u_flat = [ii for mi in self.u for ii in mi]
         self.a_flat = [ii for mi in self.a for ii in mi]
@@ -1566,13 +1566,13 @@ class MBSworld(object):
                 cos_small = [cos(ii) for ii in small]
                 sin_small_dict = dict(zip(sin_small, small))
                 cos_small_dict = dict(zip(cos_small, [1.0]*len(small)))
-                print (cos_small_dict, sin_small_dict)
+                print(cos_small_dict, sin_small_dict)
                 self.M = self.M.subs(sin_small_dict)
                 self.M = self.M.subs(cos_small_dict)
                 self.F = self.F.subs(sin_small_dict)
                 self.F = self.F.subs(cos_small_dict)
-            
-        
+
+
         print( "equations now in ram... lambdify the M,F parts" )
         self.M_func = lambdify(self.dynamic, self.M)               # Create a callable function to evaluate the mass matrix
         self.F_func = lambdify(self.dynamic, self.F)               # Create a callable function to evaluate the forcing vector
@@ -1589,13 +1589,13 @@ class MBSworld(object):
         for oo in self.control_signals_obj:
             oo.subs_dict(self.kindiff_dict)
             oo.lambdify(self.q_flat + self.u_flat)
-            
+
         nums = self.bodies.values()
         #print(nums, type(nums))
         #nums.sort()
         for n in sorted(list(nums)[:-1]):
             self.body_list_sorted.append([oo for oo in self.bodies_obj.values() if oo.get_n() == n][0])
-        toc = time.clock()
+        toc = time.process_time()
         #######################################################
         # set all dicts to all frames
         d = [self.kindiff_dict, self.accdiff_dict, self.const_dict]
@@ -1740,7 +1740,7 @@ class MBSworld(object):
             for ii in range(self.dof):
                 acc_line = hstack((acc_line,(u[ti][ii]-u[ti-1][ii])/(t[ti]-t[ti-1])))
             self.acc = vstack((self.acc, acc_line))
-            
+
      #TODO : new setup of rod forces
 #    def res_rod_forces(self):
 #        self.f_rod = []
@@ -1828,7 +1828,7 @@ class MBSworld(object):
 
     def prep_lambdas(self, moving_frames_in_graphics = [], fixed_frames_in_graphics = [], forces_in_graphics = [], bodies_in_graphics = {}):
         print( "start preparing lambdas..." )
-        start = time.clock()
+        start = time.process_time()
         self.res_body_pos_IF()
         self.res_body_orient()
         self.vis_frame_coords = []
@@ -1855,7 +1855,7 @@ class MBSworld(object):
             if is_body:
                 self.vis_force_coords.append(self.res_total_force(body))
 
-        end = time.clock()
+        end = time.process_time()
 
         for k,v in bodies_in_graphics.items():
             n, N_fixed_n, is_body, body = self._interpretation_of_str_m_b(k)
@@ -1917,7 +1917,7 @@ class MBSworld(object):
                 self.model_signals_results[ii] = vstack((self.model_signals_results[ii],model_signals))
 
             self.control_signals_results.append([cf.lamb(*q_flat_u_flat) for cf in self.control_signals_obj])
-            
+
             self.state = vstack((self.state,vx))
             self.orient = vstack((self.orient,orient))
 
@@ -2023,7 +2023,7 @@ class MBSworld(object):
                 lines = plt.plot(array(self.control_signals_results)[:,2], array(self.control_signals_results)[:,n])
                 leg = plt.legend(['Signal '+str(n)])
                 lab = plt.xlabel(self.control_signals_obj[n].name+" in "+self.control_signals_obj[n].unit)
-            plt.show()  
+            plt.show()
 
     def animate(self, t_max, dt, scale = 4, time_scale = 1, t_ani = 30., labels = False, center = -1, f_scale = 0.1, f_min = 0.2, f_max = 5.):
         #stationary vectors:
@@ -2044,7 +2044,7 @@ class MBSworld(object):
 
         self.time = linspace(0, t_max, int(t_max/delta_t))
         print( "start integration ..." )
-        start = time.clock()
+        start = time.process_time()
         ###
         #some int stuff
         if mode == 1:
@@ -2060,7 +2060,7 @@ class MBSworld(object):
         elif mode == 0:
             self.x_t = odeint(self.right_hand_side, x0, self.time, args=([0.,0.],) , hmax = 1.0e-1, hmin = 1.0e-7, atol = 1e-5*tolerance, rtol = 1e-5*tolerance) #, mxords = 4, mxordn = 8)
 
-        end = time.clock()
+        end = time.process_time()
         print( "end integration ...", end-start )
 
     def constr_lin(self, x_op, quad = False):
@@ -2207,4 +2207,3 @@ class MBSworld(object):
         equ1 = equ1.subs(x_op)
         equ1 = equ1.subs({x:q})
         return equ1
-
