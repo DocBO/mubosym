@@ -20,26 +20,26 @@ axes_rear_marker = ['body_car_rr', 'body_car_rl' ]
 axes_front_marker = ['body_car_fr', 'body_car_fl' ]
 
 I_car = [500.,3000.,1500.]
-I_0 = [0.,0.,0.] 
+I_0 = [0.,0.,0.]
 I_tire = [1.,1.,1.]
 
 k = interp(filename = mbs.DATA_PATH+"/vel_01.dat")
 #high end definition of static variables...
 @mbs.static_vars(t_p=0, diff_p=0)
-def lateral_inp(t): 
+def lateral_inp(t):
     #return -20.
     velocity = myMBS.get_control_signal(0)
     v_soll = k.f_interp(t)
     diff = (v_soll-velocity)
     delt = (t-lateral_inp.t_p)
-    diff = (lateral_inp.diff_p *0.5 + diff* delt) / (delt + 0.5) 
+    diff = (lateral_inp.diff_p *0.5 + diff* delt) / (delt + 0.5)
     lateral_inp.diff_p = diff
     lateral_inp.t_p = t
     return -400*diff
- 
+
 def zero(t):
     return 0.
-    
+
 myMBS.add_parameter('theta_lateral', lateral_inp, zero, zero)
 c_0, h, gamma = symbols('c_0, h, gamma')
 
@@ -50,7 +50,7 @@ def axes_front(axes_marker, n):
     myMBS.add_rotating_marker_para('carrier_M_f'+str(n), 'carrier_f'+str(n), 'phi', 0.,-0.20,0.0, 'Y')
     myMBS.add_body_3d('tire_f'+str(n), 'carrier_M_f'+str(n), 1.0, I_tire , 'revolute-Z', parameters = [])
     myMBS.add_one_body_force_model('tiremodel_'+str(n), 'tire_f'+str(n),'carrier_M_f'+str(n),'tire')
-    
+
 def axes_rear(axes_marker, n):
     myMBS.add_body_3d('carrier_r'+str(n), axes_marker, 60.0, I_0, 'y-axes', parameters = [])
     myMBS.add_force_special('carrier_r'+str(n), 'spring-damper-axes', parameters = [c_0, -h, gamma])
@@ -58,7 +58,7 @@ def axes_rear(axes_marker, n):
     myMBS.add_marker('carrier_M_r'+str(n), 'carrier_r'+str(n) , 0.,-0.20,0.0)
     myMBS.add_body_3d('tire_r'+str(n), 'carrier_M_r'+str(n), 1.0, I_tire , 'revolute-Z', parameters = [])
     myMBS.add_one_body_force_model('tiremodel_'+str(n), 'tire_r'+str(n),'carrier_M_r'+str(n),'tire')
-    
+
 # a simple car using sequence buildup
 myMBS.add_body_3d('body_car', 'world_M0', 1700.0, I_car, 'free-6', parameters = [], graphics = False) #[np.pi/2., 2.0])
 myMBS.add_marker('body_car_fr', 'body_car', 1.5,0.,0.7)
@@ -77,7 +77,7 @@ myMBS.add_force_special('body_car', 'grav')
 #def rotation_inp_expr():
 #    t, A = symbols('t A')
 #    return (A+0.02*t)*sin(1.0*t)
-    
+
 #A = -0.02
 #omega = 0.8
 #def rotation_inp(t):
@@ -85,7 +85,7 @@ myMBS.add_force_special('body_car', 'grav')
 #        return 0.
 #    else:
 #        return A*np.sin(omega*(t-10.))
-#    
+#
 #def rotation_inp_diff(t):
 #    if t < 10.:
 #        return 0.
@@ -113,7 +113,7 @@ def rotation_inp(t):
     if delt > 0.05: #0.1
         rotation_inp.tau, x, z, dist = kst.distance((bx,bz), rotation_inp.tau)
         t_diff = kst.tang_diff((vx,vz), rotation_inp.tau)
-        #dist = (rotation_inp.dist_p *0.1 + dist* delt) / (delt + 0.1) 
+        #dist = (rotation_inp.dist_p *0.1 + dist* delt) / (delt + 0.1)
         rotation_inp.t_p = t
         #rotation_inp.dist_p = dist
         rotation_inp.phi_int -= dist*1.0e-3
@@ -122,8 +122,8 @@ def rotation_inp(t):
             rotation_inp.phi_out = 0.12
         elif rotation_inp.phi_out < -0.12:
             rotation_inp.phi_out = -0.12
-            
-        print t, delt, rotation_inp.phi_out, dist, t_diff
+
+        print(t, delt, rotation_inp.phi_out, dist, t_diff)
         #rotation_inp.n += 1
         #if rotation_inp.n > 20:
         #    rotation_inp.phi_int = 0.
@@ -151,7 +151,7 @@ myMBS.add_parameter_torque('tire_r1', 'carrier_M_r1', [0.,0.,1.], 'theta_lateral
 # constants
 g = symbols('g')
 height = 0.4
-constants = [ g,  c_0, h, gamma ]             # Constant definitions 
+constants = [ g,  c_0, h, gamma ]             # Constant definitions
 constants_vals = [9.81, 35000, height, 4500 ]      # Numerical values
 
 const_dict = dict(zip(constants, constants_vals))
@@ -176,7 +176,7 @@ myMBS.add_control_signal(vx, "vx", "m/s")
 #to settle car ...
 for b in myMBS.bodies.keys():
     myMBS.add_damping(b, 10.0)
-    
+
 body = myMBS.get_body('body_car')
 #body.set_small_angles([body.get_phi(), body.get_psi()])
 
